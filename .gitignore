@@ -32,3 +32,8 @@ moneytrack-api/data/*.db
 #鸿蒙
 .localization/
 .resources/
+
+# Build artifacts (auto-generated)
+**/BuildProfile.ets
+**/oh-package-lock.json5
+package-lock.json
