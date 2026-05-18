@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "bill_base",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "routerMap": [
+    {
+      "name": "CommonConfirmDialog",
+      "pageSourceFile": "src/main/ets/dialogs/CommonConfirmDialog.ets",
+      "buildFunction": "commonConfirmDialogBuilder",
+      "data": {
+        "description": ""
+      }
+    }
+  ]
+}

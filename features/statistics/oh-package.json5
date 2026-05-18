@@ -1,0 +1,17 @@
+{
+  "name": "statistics",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "commonlib": "file:../../commons/commonlib",
+    "bill_manage": "file:../../components/bill_manage",
+    "bill_card": "file:../../components/bill_card",
+    "bill_chart": "file:../../components/bill_chart",
+    "bill_base": "file:../../components/bill_base",
+    "bill_data_processing": "file:../../components/bill_data_processing",
+    "dayjs": "1.11.13"
+  }
+}

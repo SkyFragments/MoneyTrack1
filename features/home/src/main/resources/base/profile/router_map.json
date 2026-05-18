@@ -1,0 +1,36 @@
+{
+  "routerMap": [
+    {
+      "name": "BillDetailPage",
+      "pageSourceFile": "src/main/ets/views/BillDetailPage.ets",
+      "buildFunction": "billDetailPageBuilder",
+      "data": {
+        "description": ""
+      }
+    },
+    {
+      "name": "AccountBookPage",
+      "pageSourceFile": "src/main/ets/views/AccountBookPage.ets",
+      "buildFunction": "accountBookPageBuilder",
+      "data": {
+        "description": ""
+      }
+    },
+    {
+      "name": "AccountBookDetailPage",
+      "pageSourceFile": "src/main/ets/views/AccountBookDetailPage.ets",
+      "buildFunction": "accountBookDetailPageBuilder",
+      "data": {
+        "description": ""
+      }
+    },
+    {
+      "name": "ResourceManagePage",
+      "pageSourceFile": "src/main/ets/views/ResourceManagePage.ets",
+      "buildFunction": "resourceManagePageBuilder",
+      "data": {
+        "description": ""
+      }
+    }
+  ]
+}

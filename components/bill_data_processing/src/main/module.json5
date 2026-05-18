@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "bill_data_processing",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

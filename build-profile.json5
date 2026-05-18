@@ -1,0 +1,122 @@
+{
+  "app": {
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.0.2(22)",
+        "compatibleSdkVersion": "5.0.5(17)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./products/entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "commonlib",
+      "srcPath": "./commons/commonlib"
+    },
+    {
+      "name": "lib_network",
+      "srcPath": "./commons/lib_network"
+    },
+    {
+      "name": "bill_manage",
+      "srcPath": "./components/bill_manage"
+    },
+    {
+      "name": "home",
+      "srcPath": "./features/home"
+    },
+    {
+      "name": "bill_card",
+      "srcPath": "./components/bill_card"
+    },
+    {
+      "name": "bill_chart",
+      "srcPath": "./components/bill_chart"
+    },
+    {
+      "name": "statistics",
+      "srcPath": "./features/statistics"
+    },
+    {
+      "name": "asset_manage",
+      "srcPath": "./components/asset_manage"
+    },
+    {
+      "name": "asset_card",
+      "srcPath": "./components/asset_card"
+    },
+    {
+      "name": "asset_base",
+      "srcPath": "./components/asset_base"
+    },
+    {
+      "name": "assets",
+      "srcPath": "./features/assets"
+    },
+    {
+      "name": "bill_base",
+      "srcPath": "./components/bill_base"
+    },
+    {
+      "name": "bill_data_processing",
+      "srcPath": "./components/bill_data_processing"
+    },
+    {
+      "name": "aggregated_login",
+      "srcPath": "./components/aggregated_login"
+    },
+    {
+      "name": "app_setting",
+      "srcPath": "./components/app_setting"
+    },
+    {
+      "name": "collect_personal_info",
+      "srcPath": "./components/collect_personal_info"
+    },
+    {
+      "name": "feedback",
+      "srcPath": "./components/feedback"
+    },
+    {
+      "name": "membership",
+      "srcPath": "./components/membership"
+    },
+    {
+      "name": "module_ui_base",
+      "srcPath": "./components/module_ui_base"
+    },
+    {
+      "name": "mine",
+      "srcPath": "./features/mine"
+    }
+  ]
+}

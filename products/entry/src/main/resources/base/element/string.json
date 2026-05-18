@@ -1,0 +1,44 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "记账模板"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "记账模板"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "记账模板"
+    },
+    {
+      "name": "EntryFormAbility_desc",
+      "value": "记账模板"
+    },
+    {
+      "name": "EntryFormAbility_label",
+      "value": "记账模板"
+    },
+    {
+      "name": "mini_desc",
+      "value": "这是一个记账模板2*2的小型卡片."
+    },
+    {
+      "name": "mini_display_name",
+      "value": "记账模板"
+    },
+    {
+      "name": "middle_desc",
+      "value": "这是一个记账模板2*4的中型卡片."
+    },
+    {
+      "name": "middle_display_name",
+      "value": "记账模板"
+    },
+    {
+      "name": "agcit_huawei_money_track",
+      "value": "1.0.1"
+    }
+  ]
+}

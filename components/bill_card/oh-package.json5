@@ -1,0 +1,12 @@
+{
+  "name": "bill_card",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bill_base": "file:../bill_base",
+    "dayjs": "1.11.13"
+  }
+}

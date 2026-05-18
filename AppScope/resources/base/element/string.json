@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "MoneyTrack"
+    },
+    {
+      "name": "agcit_huawei_money_track",
+      "value": "1.0.3"
+    },
+    {
+      "name": "agcittype_huawei_money_track",
+      "value": "industryTemplate"
+    },
+    {
+      "name": "agcitkid_huawei_money_track",
+      "value": "agcit_huawei_money_track_asset_card/1.0.2,agcit_huawei_money_track_asset_manage/1.0.2,agcit_huawei_money_track_bill_card/1.0.1,agcit_huawei_money_track_bill_chart/1.0.1,agcit_huawei_money_track_bill_manage/1.0.2"
+    }
+  ]
+}

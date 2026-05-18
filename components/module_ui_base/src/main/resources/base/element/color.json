@@ -1,0 +1,64 @@
+{
+  "color": [
+    {
+      "name": "theme_color",
+      "value": "#e64566"
+    },
+    {
+      "name": "theme_color_second",
+      "value": "#f2992c"
+    },
+    {
+      "name": "font_color_level1",
+      "value": "#e6000000"
+    },
+    {
+      "name": "font_color_level1_invert",
+      "value": "#ffffff"
+    },
+    {
+      "name": "font_color_level2",
+      "value": "#99000000"
+    },
+    {
+      "name": "font_color_level2_invert",
+      "value": "#99ffffff"
+    },
+    {
+      "name": "font_color_level3",
+      "value": "#66000000"
+    },
+    {
+      "name": "divider_color",
+      "value": "#c4c4c4"
+    },
+    {
+      "name": "warning_color",
+      "value": "#e84026"
+    },
+    {
+      "name": "background_color_white",
+      "value": "#ffffff"
+    },
+    {
+      "name": "background_color_grey",
+      "value": "#f1f3f5"
+    },
+    {
+      "name": "background_color_theme",
+      "value": "#1ae64566"
+    },
+    {
+      "name": "background_color_grey_light",
+      "value": "#0d000000"
+    },
+    {
+      "name": "background_color_transparent",
+      "value": "#00000000"
+    },
+    {
+      "name": "icon_color_grey",
+      "value": "#33000000"
+    }
+  ]
+}

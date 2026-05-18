@@ -1,0 +1,19 @@
+{
+  "name": "mine",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "commonlib": "file:../../commons/commonlib",
+    "bill_data_processing": "file:../../components/bill_data_processing",
+    "lib_network": "file:../../commons/lib_network",
+    "aggregated_login": "file:../../components/aggregated_login",
+    "app_setting": "file:../../components/app_setting",
+    "feedback": "file:../../components/feedback",
+    "membership": "file:../../components/membership",
+    "collect_personal_info": "file:../../components/collect_personal_info",
+    "@tencent/wechat_open_sdk": "1.0.14"
+  }
+}

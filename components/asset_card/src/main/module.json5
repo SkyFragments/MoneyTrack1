@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "asset_card",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

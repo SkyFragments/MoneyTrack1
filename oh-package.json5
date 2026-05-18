@@ -1,0 +1,20 @@
+{
+  "modelVersion": "5.0.2",
+  "description": "Please describe the basic information.",
+  "scripts": {
+    "prettier": "prettier --check \"**/*.{js,json,md,ts,ets}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,json,md,ts,ets}\"",
+    "lint": "eslint --ext .js,.ets,.jsx,.tsx ",
+    "lint:fix": "eslint . --ext .js,.ets,.jsx,.tsx --fix"
+  },
+  "dependencies": {
+    "@hw-agconnect/ui-toast": "^1.0.0",
+    "@hw-agconnect/ui-dialog": "^1.0.1",
+    "@hw-agconnect/axios-mock-adapter": "^1.0.0",
+    "@hw-agconnect/util-log": "^1.0.0"
+  },
+  "devDependencies": {
+    "@ohos/hypium": "1.0.21",
+  },
+  "dynamicDependencies": {}
+}

@@ -1,0 +1,28 @@
+{
+  "routerMap": [
+    {
+      "name": "AssetDetailPage",
+      "pageSourceFile": "src/main/ets/views/AssetDetailPage.ets",
+      "buildFunction": "assetDetailPageBuilder",
+      "data": {
+        "description": ""
+      }
+    },
+    {
+      "name": "AssetAnalysisPage",
+      "pageSourceFile": "src/main/ets/views/AssetAnalysisPage.ets",
+      "buildFunction": "assetAnalysisPageBuilder",
+      "data": {
+        "description": ""
+      }
+    },
+    {
+      "name": "AddAssetPage",
+      "pageSourceFile": "src/main/ets/views/AddAssetPage.ets",
+      "buildFunction": "addAssetPageBuilder",
+      "data": {
+        "description": ""
+      }
+    }
+  ]
+}

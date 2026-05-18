@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "asset_manage",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

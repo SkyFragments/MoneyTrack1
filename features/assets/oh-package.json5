@@ -1,0 +1,22 @@
+{
+  "name": "assets",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "commonlib": "file:../../commons/commonlib",
+    "bill_manage": "file:../../components/bill_manage",
+    "asset_base": "file:../../components/asset_base",
+    "bill_base": "file:../../components/bill_base",
+    "asset_card": "file:../../components/asset_card",
+    "asset_manage": "file:../../components/asset_manage",
+    "bill_data_processing": "file:../../components/bill_data_processing",
+    "bill_card": "file:../../components/bill_card",
+    "bill_chart": "file:../../components/bill_chart",
+    "statistics": "file:../statistics",
+    "dayjs": "1.11.13",
+    "@ohos/mpchart": "3.0.25"
+  }
+}

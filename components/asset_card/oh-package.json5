@@ -1,0 +1,11 @@
+{
+  "name": "asset_card",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "asset_base": "file:../asset_base",
+  }
+}

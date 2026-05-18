@@ -1,0 +1,24 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "commonlib": "file:../../commons/commonlib",
+    "lib_network": "file:../../commons/lib_network",
+    "home": "file:../../features/home",
+    "statistics": "file:../../features/statistics",
+    "assets": "file:../../features/assets",
+    "mine": "file:../../features/mine",
+    "bill_data_processing": "file:../../components/bill_data_processing",
+    "aggregated_login": "file:../../components/aggregated_login",
+    "app_setting": "file:../../components/app_setting",
+    "feedback": "file:../../components/feedback",
+    "membership": "file:../../components/membership",
+    "collect_personal_info": "file:../../components/collect_personal_info",
+    "dayjs": "1.11.13"
+  }
+}
+

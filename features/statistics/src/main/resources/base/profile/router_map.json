@@ -1,0 +1,12 @@
+{
+  "routerMap": [
+    {
+      "name": "BillByResourcePage",
+      "pageSourceFile": "src/main/ets/views/BillByResourceView.ets",
+      "buildFunction": "billByResourcePageBuilder",
+      "data": {
+        "description": ""
+      }
+    }
+  ]
+}

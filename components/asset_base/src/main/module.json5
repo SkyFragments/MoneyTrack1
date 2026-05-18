@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "asset_base",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

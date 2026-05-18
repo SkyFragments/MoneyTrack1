@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "agcit_huawei_money_track_asset_manage",
+      "value": "1.0.2"
+    },
+    {
+      "name": "agcittype_huawei_money_track_asset_manage",
+      "value": "serviceComponent"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "asset_manage",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@hw-agconnect/ui-toast": "^1.0.0",
+    "@hw-agconnect/ui-dialog": "^1.0.1",
+    "asset_base": "file:../asset_base"
+  }
+}

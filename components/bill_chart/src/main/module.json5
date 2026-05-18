@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "bill_chart",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

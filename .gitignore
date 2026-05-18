@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+oh_modules/
+
+# Build outputs
+build/
+.hvigor/
+ohos/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.hprof
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Database (local)
+moneytrack-api/data/*.db
+*.db
+
+# Environment
+.env.local
+.env.production
+
+#鸿蒙
+.localization/
+.resources/
