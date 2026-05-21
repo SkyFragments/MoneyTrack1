@@ -1,14 +1,6 @@
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
 
 const ALLOWED_TABLES = ['accounts', 'transactions', 'assets', 'budgets'];
-
-function getLastInsertId(db) {
-  const s = db.prepare('SELECT last_insert_rowid() as id');
-  s.step();
-  const id = s.getAsObject().id;
-  s.free();
-  return id;
-}
 
 /**
  * Pull: 获取服务端最新数据 (包含localId映射)
@@ -180,10 +172,7 @@ async function push(userId, data) {
         const stmt = db.prepare('INSERT INTO budgets (userId, accountId, month, amount, createdAt, updatedAt, deleted) VALUES (?, ?, ?, ?, ?, ?, 0)');
         stmt.run([userId, item.accountId, item.month, item.amount, now, now]);
         stmt.free();
-        const lastIdStmt = db.prepare('SELECT last_insert_rowid() as id');
-        lastIdStmt.step();
-        const serverId = lastIdStmt.getAsObject().id;
-        lastIdStmt.free();
+        const serverId = getLastInsertId(db);
         if (item.id != null) {
           mappings.push({ table: 'budgets', localId: item.id, serverId });
         }

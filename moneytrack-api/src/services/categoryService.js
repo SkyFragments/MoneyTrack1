@@ -1,4 +1,4 @@
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
 
 /**
  * Get all categories for a user (preset + custom)
@@ -51,8 +51,7 @@ async function create(userId, data) {
   stmt.run([userId, data.name, data.type, data.icon || '', sortOrder, now, now]);
   stmt.free();
 
-  const idResult = db.exec('SELECT last_insert_rowid() as id');
-  const serverId = idResult[0].values[0][0];
+  const serverId = getLastInsertId(db);
   await saveDbAsync();
 
   return { id: serverId, userId, name: data.name, type: data.type, icon: data.icon || '', sortOrder, isPreset: 0, createdAt: now, updatedAt: now, deleted: 0 };

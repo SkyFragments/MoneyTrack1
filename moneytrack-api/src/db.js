@@ -25,6 +25,14 @@ function isTokenRevoked(token) {
   return revokedTokens.has(token);
 }
 
+function getLastInsertId(database) {
+  const s = database.prepare('SELECT last_insert_rowid() as id');
+  s.step();
+  const id = s.getAsObject().id;
+  s.free();
+  return id;
+}
+
 async function getDb() {
   try {
     if (db) return db;
@@ -221,4 +229,4 @@ async function initializeDatabase() {
   // Database initialized
 }
 
-module.exports = { getDb, initializeDatabase, saveDb, saveDbAsync, revokeToken, isTokenRevoked };
+module.exports = { getDb, initializeDatabase, saveDb, saveDbAsync, revokeToken, isTokenRevoked, getLastInsertId };
