@@ -1,5 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
-const { getDb, saveDb } = require('../db');
+const { getDb, saveDbAsync } = require('../db');
 
 /**
  * Get all categories for a user (preset + custom)
@@ -34,46 +33,29 @@ async function create(userId, data) {
   const now = new Date().toISOString();
 
   // Determine sortOrder for new category (max + 1 among user's custom categories)
-  const maxOrderResult = db.exec(`
+  const sortStmt = db.prepare(`
     SELECT COALESCE(MAX(sortOrder), 0) + 1 as nextOrder
     FROM categories
-    WHERE userId = '${userId}' AND isPreset = 0 AND deleted = 0
+    WHERE userId = ? AND isPreset = 0 AND deleted = 0
   `);
-  const sortOrder = maxOrderResult.length > 0 ? maxOrderResult[0].values[0][0] : 1;
-
-  const category = {
-    id: uuidv4(),
-    userId,
-    name: data.name,
-    type: data.type,
-    icon: data.icon || '',
-    sortOrder,
-    isPreset: 0,
-    createdAt: now,
-    updatedAt: now,
-    deleted: 0
-  };
+  sortStmt.bind([userId]);
+  sortStmt.step();
+  const sortResult = sortStmt.getAsObject();
+  const sortOrder = sortResult?.nextOrder || 1;
+  sortStmt.free();
 
   const stmt = db.prepare(`
-    INSERT INTO categories (id, userId, name, type, icon, sortOrder, isPreset, createdAt, updatedAt, deleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO categories (userId, name, type, icon, sortOrder, isPreset, createdAt, updatedAt, deleted)
+    VALUES (?, ?, ?, ?, ?, 0, ?, ?, 0)
   `);
-  stmt.run([
-    category.id,
-    category.userId,
-    category.name,
-    category.type,
-    category.icon,
-    category.sortOrder,
-    category.isPreset,
-    category.createdAt,
-    category.updatedAt,
-    category.deleted
-  ]);
+  stmt.run([userId, data.name, data.type, data.icon || '', sortOrder, now, now]);
   stmt.free();
-  saveDb();
 
-  return category;
+  const idResult = db.exec('SELECT last_insert_rowid() as id');
+  const serverId = idResult[0].values[0][0];
+  await saveDbAsync();
+
+  return { id: serverId, userId, name: data.name, type: data.type, icon: data.icon || '', sortOrder, isPreset: 0, createdAt: now, updatedAt: now, deleted: 0 };
 }
 
 /**
@@ -124,8 +106,11 @@ async function update(id, userId, data) {
   values.push(id);
 
   const sql = `UPDATE categories SET ${updates.join(', ')} WHERE id = ?`;
-  db.run(sql, values);
-  saveDb();
+  const updateStmt = db.prepare(sql);
+  updateStmt.bind(values);
+  updateStmt.step();
+  updateStmt.free();
+  await saveDbAsync();
 
   return true;
 }
@@ -153,7 +138,7 @@ async function remove(id, userId) {
 
   const now = new Date().toISOString();
   db.run(`UPDATE categories SET deleted = 1, updatedAt = ? WHERE id = ?`, [now, id]);
-  saveDb();
+  await saveDbAsync();
 
   return true;
 }

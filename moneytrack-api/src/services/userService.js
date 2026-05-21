@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const { getDb, saveDb } = require('../db');
+const { getDb, saveDbAsync } = require('../db');
 
 const SALT_ROUNDS = 10;
 
@@ -10,22 +10,25 @@ async function createUser(email, password) {
   const now = new Date().toISOString();
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  db.run(
-    'INSERT INTO users (id, email, password, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-    [id, email, hashedPassword, now, now]
+  const stmt = db.prepare(
+    'INSERT INTO users (id, email, password, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
   );
-  saveDb();
+  stmt.run([id, email, hashedPassword, now, now]);
+  stmt.free();
+  await saveDbAsync();
 
   return { id, email, createdAt: now };
 }
 
 async function validateUser(email, password) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, email, password, createdAt FROM users WHERE email = ?');
-  const user = stmt.get([email]);
+  const stmt = db.prepare('SELECT id, email, password, createdAt FROM users WHERE email = ? AND deleted = 0');
+  stmt.bind([email]);
+  stmt.step();
+  const user = stmt.getAsObject();
   stmt.free();
 
-  if (!user) {
+  if (!user || !user.password) {
     return null;
   }
 
@@ -39,8 +42,10 @@ async function validateUser(email, password) {
 
 async function findById(id) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, email, createdAt FROM users WHERE id = ?');
-  const user = stmt.get([id]);
+  const stmt = db.prepare('SELECT id, email, createdAt FROM users WHERE id = ? AND deleted = 0');
+  stmt.bind([id]);
+  stmt.step();
+  const user = stmt.getAsObject();
   stmt.free();
 
   return user;
@@ -48,8 +53,10 @@ async function findById(id) {
 
 async function findByHuaweiOpenId(openId) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, email, huaweiOpenId, createdAt FROM users WHERE huaweiOpenId = ?');
-  const user = stmt.get([openId]);
+  const stmt = db.prepare('SELECT id, email, huaweiOpenId, createdAt FROM users WHERE huaweiOpenId = ? AND deleted = 0');
+  stmt.bind([openId]);
+  stmt.step();
+  const user = stmt.getAsObject();
   stmt.free();
 
   return user;
@@ -60,11 +67,12 @@ async function createFromHuawei(openId, email) {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  db.run(
-    'INSERT INTO users (id, email, huaweiOpenId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-    [id, email, openId, now, now]
+  const stmt = db.prepare(
+    'INSERT INTO users (id, email, huaweiOpenId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
   );
-  saveDb();
+  stmt.run([id, email, openId, now, now]);
+  stmt.free();
+  await saveDbAsync();
 
   return { id, email, huaweiOpenId: openId, createdAt: now };
 }
