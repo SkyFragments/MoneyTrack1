@@ -53,6 +53,7 @@ function saveDbAsync() {
         }
       } catch (error) {
         console.error('saveDb failed:', error);
+        throw error;
       } finally {
         resolve();
       }
@@ -212,7 +213,7 @@ async function initializeDatabase() {
       stmt.run([cat.key, cat.name, cat.type, cat.icon, cat.sortOrder, now, now]);
     }
     stmt.free();
-    saveDb();
+    await saveDb();
     }
   } catch (error) {
     throw new Error(`Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`);
