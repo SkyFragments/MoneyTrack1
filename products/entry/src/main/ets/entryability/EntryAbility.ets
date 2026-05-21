@@ -1,6 +1,7 @@
 import { ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
-import { contextUtil, FrameworkUtil, Logger, TabIndexMap, WindowUtil } from 'commonlib';
+import { contextUtil, FrameworkUtil, Logger, TabIndexMap, WindowUtil, AuthCache, iData } from 'commonlib';
+import { AuthApis } from 'lib_network';
 
 const TAG: string = '[EntryAbility]';
 
@@ -22,6 +23,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   public onWindowStageCreate(windowStage: window.WindowStage): void {
+    this.validateAuth();
     Logger.info(TAG, 'Ability onWindowStageCreate');
 
     windowStage.loadContent('pages/MainEntry', (err) => {
@@ -51,5 +53,25 @@ export default class EntryAbility extends UIAbility {
         Logger.error('get want parameters failed.' + JSON.stringify(err));
       }
     }
+  }
+
+  async validateAuth(): Promise<void> {
+    const token = AuthCache.getAccessToken();
+    if (!token) {
+      return;
+    }
+    try {
+      const res = await AuthApis.me();
+      if (res.code !== 0) {
+        this.clearAuthState();
+      }
+    } catch {
+      this.clearAuthState();
+    }
+  }
+
+  clearAuthState(): void {
+    AuthCache.clear();
+    iData.global.isLogin = false;
   }
 }
