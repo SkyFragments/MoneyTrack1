@@ -9,13 +9,14 @@ import {
   SupportedSetting,
   WebModel,
 } from 'app_setting';
-import { RouterModule, RouterMap, CommonHeader, iData } from 'commonlib'
-import { UserApis } from 'lib_network';
+import { RouterModule, RouterMap, CommonHeader, iData, AuthCache } from 'commonlib'
 
 @ComponentV2
 export struct SettingPage {
   @Local
   stack: NavPathStack = RouterModule.getStack()
+  @Local
+  isLoggedIn: boolean = iData.global.isLogin
   @Local
   group1: SettingGroup = new SettingGroup()
     .setList([
@@ -82,7 +83,7 @@ export struct SettingPage {
           settingList: [this.group1, this.group2, this.group3, this.group4],
         })
           .layoutWeight(1)
-        if (iData.global.isLogin) {
+        if (this.isLoggedIn) {
           Row() {
             Button('退出登录')
               .width('100%')
@@ -96,11 +97,11 @@ export struct SettingPage {
                   showCancelButton: true,
                   onConfirm: async () => {
                     UIDialog.closeLast();
-                    const res = await UserApis.logout();
-                    if (res.code === 0) {
-                      ToastDialog.showToast({ message: '已退出登录' });
-                      RouterModule.pop();
-                    }
+                    AuthCache.clear();
+                    iData.global.isLogin = false;
+                    this.isLoggedIn = false;
+                    ToastDialog.showToast({ message: '已退出登录' });
+                    RouterModule.pop();
                   }
                 })
               },
