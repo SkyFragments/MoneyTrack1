@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A4A750E77D57254BAF94F873687919135E6EA2E16AAA94B6144B122987D2F125AF93AEF125E42",
+          "profile": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.p12",
+          "storePassword": "0000001AB3C28828484E86DCBD7C24D04FACAADD5A09DB4939CF579B8D0F46BFB912B68F8D89FD439A62"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
@@ -22,6 +36,25 @@
       },
       {
         "name": "release"
+      }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "com.skyfragments.moneytrack",
+        "config": [
+          {
+            "name": "Push Kit",
+            "capability": "com.huawei.service.push.base_service"
+          },
+          {
+            "name": "Device status detection",
+            "capability": "com.huawei.service.device_security.device_verify"
+          },
+          {
+            "name": "Safety Detect",
+            "capability": "com.huawei.service.device_security.safety_detect"
+          }
+        ]
       }
     ]
   },

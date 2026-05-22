@@ -1,5 +1,7 @@
 export { Logger } from './src/main/ets/utils/logger/Index';
 
+export { AuthCache } from './src/main/ets/utils/auth/AuthCache';
+
 export { WindowUtil } from './src/main/ets/utils/window/Index';
 
 export { FrameworkUtil, TabIndexMap } from './src/main/ets/utils/framework/Index';

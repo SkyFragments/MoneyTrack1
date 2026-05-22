@@ -1,10 +1,11 @@
 const express = require('express');
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/transactions
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { accountId, since } = req.query;
@@ -28,11 +29,11 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/transactions
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { localId, accountId, resource, type, amount, date, note, excluded, assetId } = req.body;
-    if (!accountId || !resource || !type || !amount || !date) {
+    if (!accountId || resource === undefined || !type || !amount || !date) {
       return res.status(400).json({ code: 400, msg: 'accountId, resource, type, amount, date required' });
     }
 
@@ -46,12 +47,14 @@ router.post('/', async (req, res) => {
     stmt.run([userId, accountId, resource, type, amount, date, note || '', excluded ? 1 : 0, assetId || null, localId || null, now, now]);
     stmt.free();
 
-    const idResult = db.exec('SELECT last_insert_rowid() as id');
-    const serverId = idResult[0].values[0][0];
+    const serverId = getLastInsertId(db);
 
     // Update account income/expense
     const field = type === 'income' ? 'accountIncome' : 'accountExpense';
-    db.run(`UPDATE accounts SET ${field} = ${field} + ? WHERE id = ?`, [amount, accountId]);
+    const updateAccountStmt = db.prepare('UPDATE accounts SET ' + field + ' = ' + field + ' + ? WHERE id = ?');
+    updateAccountStmt.bind([amount, accountId]);
+    updateAccountStmt.step();
+    updateAccountStmt.free();
 
     await saveDbAsync();
     res.json({ code: 0, data: { transactionId: serverId, localId, resource, type, amount, date, note, excluded, assetId } });
@@ -61,7 +64,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/transactions/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { accountId, resource, type, amount, date, note, excluded, assetId } = req.body;
@@ -77,7 +80,7 @@ router.put('/:id', async (req, res) => {
     const updates = [];
     const values = [];
     const fieldValues = { accountId, resource, type, amount, date, note, excluded, assetId };
-    const fields = ['accountId','resource','type','amount','date','note','excluded','assetId'];
+    const fields = ['accountId', 'resource', 'type', 'amount', 'date', 'note', 'excluded', 'assetId'];
     for (const f of fields) {
       if (fieldValues[f] !== undefined) { updates.push(f + ' = ?'); values.push(fieldValues[f]); }
     }
@@ -85,16 +88,26 @@ router.put('/:id', async (req, res) => {
     values.push(now);
     values.push(req.params.id);
 
-    db.run(`UPDATE transactions SET ${updates.join(', ')} WHERE id = ?`, values);
+    const sql = 'UPDATE transactions SET ' + updates.join(', ') + ' WHERE id = ?';
+    const updateStmt = db.prepare(sql);
+    updateStmt.bind(values);
+    updateStmt.step();
+    updateStmt.free();
 
     // Reverse old account totals
     if (old.type && old.amount && old.amount > 0) {
       const origField = old.type === 'income' ? 'accountIncome' : 'accountExpense';
-      db.run(`UPDATE accounts SET ${origField} = ${origField} - ? WHERE id = ?`, [old.amount, old.accountId]);
+      const origAccountStmt = db.prepare('UPDATE accounts SET ' + origField + ' = ' + origField + ' - ? WHERE id = ?');
+      origAccountStmt.bind([old.amount, old.accountId]);
+      origAccountStmt.step();
+      origAccountStmt.free();
     }
     if (type && amount && amount > 0) {
       const newField = type === 'income' ? 'accountIncome' : 'accountExpense';
-      db.run(`UPDATE accounts SET ${newField} = ${newField} + ? WHERE id = ?`, [amount, accountId || old.accountId]);
+      const newAccountStmt = db.prepare('UPDATE accounts SET ' + newField + ' = ' + newField + ' + ? WHERE id = ?');
+      newAccountStmt.bind([amount, accountId || old.accountId]);
+      newAccountStmt.step();
+      newAccountStmt.free();
     }
 
     await saveDbAsync();
@@ -105,7 +118,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/transactions/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();
@@ -121,7 +134,10 @@ router.delete('/:id', async (req, res) => {
 
     if (old.type && old.amount) {
       const field = old.type === 'income' ? 'accountIncome' : 'accountExpense';
-      db.run(`UPDATE accounts SET ${field} = ${field} - ? WHERE id = ?`, [old.amount, old.accountId]);
+      const deleteAccountStmt = db.prepare('UPDATE accounts SET ' + field + ' = ' + field + ' - ? WHERE id = ?');
+      deleteAccountStmt.bind([old.amount, old.accountId]);
+      deleteAccountStmt.step();
+      deleteAccountStmt.free();
     }
     await saveDbAsync();
     res.json({ code: 0, data: true });

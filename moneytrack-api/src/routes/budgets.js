@@ -1,10 +1,11 @@
 const express = require('express');
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/budgets
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { accountId, month } = req.query;
@@ -28,7 +29,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/budgets
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { accountId, month, amount } = req.body;
@@ -41,11 +42,10 @@ router.post('/', async (req, res) => {
     const check = db.prepare('SELECT id FROM budgets WHERE accountId = ? AND month = ? AND userId = ? AND deleted = 0');
     check.bind([accountId, month, userId]);
     if (check.step()) {
+      const existingId = check.getAsObject().id;
       check.free();
-      db.run('UPDATE budgets SET amount = ?, updatedAt = ?, deleted = 0 WHERE accountId = ? AND month = ? AND userId = ? AND deleted = 0', [amount, now, accountId, month, userId]);
+      db.run('UPDATE budgets SET amount = ?, updatedAt = ?, deleted = 0 WHERE id = ?', [amount, now, existingId]);
       await saveDbAsync();
-      const idResult = db.exec('SELECT id FROM budgets WHERE accountId = ? AND month = ? AND userId = ?', [accountId, month, userId]);
-      const existingId = idResult[0]?.values[0]?.[0];
       return res.json({ code: 0, data: { id: existingId, accountId, month, amount } });
     }
     check.free();
@@ -56,8 +56,7 @@ router.post('/', async (req, res) => {
     stmt.run([userId, accountId, month, amount, now, now]);
     stmt.free();
 
-    const idResult = db.exec('SELECT last_insert_rowid() as id');
-    const serverId = idResult[0].values[0][0];
+    const serverId = getLastInsertId(db);
 
     await saveDbAsync();
     res.json({ code: 0, data: { id: serverId, accountId, month, amount } });
@@ -67,7 +66,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/budgets/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { amount } = req.body;
@@ -79,7 +78,11 @@ router.put('/:id', async (req, res) => {
     if (!check.step()) { check.free(); return res.status(404).json({ code: 404, msg: 'not found' }); }
     check.free();
 
-    db.run('UPDATE budgets SET amount = ?, updatedAt = ? WHERE id = ?', [amount, now, req.params.id]);
+    const updateStmt = db.prepare('UPDATE budgets SET amount = ?, updatedAt = ? WHERE id = ?');
+    updateStmt.bind([amount, now, req.params.id]);
+    updateStmt.step();
+    updateStmt.free();
+
     await saveDbAsync();
     res.json({ code: 0, data: true });
   } catch (err) {
@@ -88,7 +91,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/budgets/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();

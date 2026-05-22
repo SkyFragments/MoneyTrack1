@@ -12,10 +12,10 @@
     "installationFree": false,
     "pages": "$profile:main_pages",
     "metadata": [
-// todo: 修改client_id
+
       {
         "name": "client_id",
-        "value": "******"
+        "value": "1953023905824259712"
       }
     ],
     "querySchemes": [

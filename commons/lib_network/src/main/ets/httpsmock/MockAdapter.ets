@@ -7,8 +7,8 @@ const mockAdapter = new AxiosMockAdapter(instance, {
   delayResponse: 300,
 });
 
-// 全局配置，是否启用mock，当前默认启用
-const enableMock: boolean = true;
+// 全局配置，是否启用mock，已禁用（连接真实服务器）
+const enableMock: boolean = false;
 
 if (enableMock) {
   const mockApis = [

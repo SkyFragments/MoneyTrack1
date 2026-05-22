@@ -19,6 +19,8 @@ export interface MembershipInfo {
   isSubscribed: boolean
 }
 
-export interface MembershipInfoResp extends BaseResponse {
-  data:MembershipInfo
+export interface MembershipInfoResp {
+  code: number;
+  msg?: string;
+  data: MembershipInfo;
 }

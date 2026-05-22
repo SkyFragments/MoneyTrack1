@@ -8,6 +8,7 @@
   "dependencies": {
     "commonlib": "file:../../commons/commonlib",
     "bill_data_processing": "file:../../components/bill_data_processing",
+    "bill_base": "file:../../components/bill_base",
     "lib_network": "file:../../commons/lib_network",
     "aggregated_login": "file:../../components/aggregated_login",
     "app_setting": "file:../../components/app_setting",

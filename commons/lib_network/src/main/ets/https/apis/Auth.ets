@@ -2,33 +2,71 @@ import { BaseResponse } from '../../types/responses/BaseResponse';
 import { RequestUrlMap } from '../../constants/Enums';
 import request from '../Request'
 
+interface UserIdInfo {
+  id: string;
+}
+
+interface HuaweiLoginData {
+  user?: UserIdInfo;
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface LoginResponseData {
+  user?: UserIdInfo;
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface TokenRefreshResponseData {
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface MeResponseData {
+  id: string;
+  email: string;
+  createdAt: string;
+}
+
+interface LoginParams {
+  email: string;
+  password: string;
+}
+
+interface RegisterParams {
+  email: string;
+  password: string;
+}
+
+interface RefreshParams {
+  refreshToken: string;
+}
+
+interface HuaweiLoginParams {
+  openId: string;
+  email?: string;
+}
+
 class AuthApis {
-  /**
-   * Get current user info
-   */
-  public me(): Promise<BaseResponse> {
+  public me(): Promise<BaseResponse<MeResponseData>> {
     return request.get(RequestUrlMap.AUTH_ME)
   }
 
-  /**
-   * Login
-   */
-  public login(params?: object): Promise<BaseResponse> {
+  public login(params: LoginParams): Promise<BaseResponse<LoginResponseData>> {
     return request.post(RequestUrlMap.AUTH_LOGIN, params)
   }
 
-  /**
-   * Register
-   */
-  public register(params?: object): Promise<BaseResponse> {
+  public register(params: RegisterParams): Promise<BaseResponse> {
     return request.post(RequestUrlMap.AUTH_REGISTER, params)
   }
 
-  /**
-   * Refresh token
-   */
-  public refresh(params?: object): Promise<BaseResponse> {
+  public refresh(params: RefreshParams): Promise<BaseResponse<TokenRefreshResponseData>> {
     return request.post(RequestUrlMap.AUTH_REFRESH, params)
+  }
+
+  public huaweiLogin(params: HuaweiLoginParams): Promise<BaseResponse<HuaweiLoginData>> {
+    return request.post(RequestUrlMap.AUTH_HUAWEI_LOGIN, params)
   }
 }
 

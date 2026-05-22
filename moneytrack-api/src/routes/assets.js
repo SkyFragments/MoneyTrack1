@@ -1,10 +1,11 @@
 const express = require('express');
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/assets
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/assets
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { name, type, subType, category, amount, note } = req.body;
@@ -35,8 +36,7 @@ router.post('/', async (req, res) => {
     stmt.run([userId, name, type, subType ?? 0, category ?? 1, amount ?? 0, note || '', now, now]);
     stmt.free();
 
-    const idResult = db.exec('SELECT last_insert_rowid() as id');
-    const serverId = idResult[0].values[0][0];
+    const serverId = getLastInsertId(db);
 
     await saveDbAsync();
     res.json({ code: 0, data: { assetId: serverId, name, type, subType: subType ?? 0, category: category ?? 1, amount: amount ?? 0, note: note || '', isCustom: 0 } });
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/assets/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();
@@ -59,7 +59,7 @@ router.put('/:id', async (req, res) => {
 
     const updates = [];
     const values = [];
-    const fields = ['name','type','subType','category','amount','note'];
+    const fields = ['name', 'type', 'subType', 'category', 'amount', 'note'];
     for (const f of fields) {
       if (req.body[f] !== undefined) { updates.push(f + ' = ?'); values.push(req.body[f]); }
     }
@@ -67,7 +67,12 @@ router.put('/:id', async (req, res) => {
     values.push(now);
     values.push(req.params.id);
 
-    db.run(`UPDATE assets SET ${updates.join(', ')} WHERE id = ?`, values);
+    const sql = 'UPDATE assets SET ' + updates.join(', ') + ' WHERE id = ?';
+    const updateStmt = db.prepare(sql);
+    updateStmt.bind(values);
+    updateStmt.step();
+    updateStmt.free();
+
     await saveDbAsync();
     res.json({ code: 0, data: true });
   } catch (err) {
@@ -76,7 +81,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/assets/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();

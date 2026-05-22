@@ -1,10 +1,11 @@
 const express = require('express');
-const { getDb, saveDbAsync } = require('../db');
+const { getDb, saveDbAsync, getLastInsertId } = require('../db');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET /api/accounts
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/accounts
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { name, type, date } = req.body;
@@ -35,8 +36,7 @@ router.post('/', async (req, res) => {
     stmt.run([userId, name, type || 'default', date || '01', now, now]);
     stmt.free();
 
-    const idResult = db.exec('SELECT last_insert_rowid() as id');
-    const serverId = idResult[0].values[0][0];
+    const serverId = getLastInsertId(db);
 
     await saveDbAsync();
     res.json({ code: 0, data: { accountId: serverId, name, type: type || 'default', date: date || '01', accountIncome: 0, accountExpense: 0 } });
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/accounts/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const { name, type, date } = req.body;
@@ -67,7 +67,12 @@ router.put('/:id', async (req, res) => {
     values.push(now);
     values.push(req.params.id);
 
-    db.run(`UPDATE accounts SET ${updates.join(', ')} WHERE id = ?`, values);
+    const sql = `UPDATE accounts SET ${updates.join(', ')} WHERE id = ?`;
+    const updateStmt = db.prepare(sql);
+    updateStmt.bind(values);
+    updateStmt.step();
+    updateStmt.free();
+
     await saveDbAsync();
     res.json({ code: 0, data: true });
   } catch (err) {
@@ -76,7 +81,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/accounts/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
     const db = await getDb();
