@@ -16,7 +16,8 @@ export enum RequestUrlMap {
   USER_LOGIN = 'user/login',
   USER_LOGOUT = 'user/logout',
   USER_INFO = 'user/info',
-  USER_MEMBERSHIP = 'user/membership'
+  USER_MEMBERSHIP = 'user/membership',
+  AUTH_UPGRADE = 'auth/upgrade'
 }
 
 export enum UserInfoType {

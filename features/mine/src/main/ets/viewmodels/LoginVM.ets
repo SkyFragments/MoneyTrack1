@@ -139,4 +139,29 @@ export class LoginUtil {
     hilog.info(DOMAIN, TAG, 'checkGuestMode: userType=%{public}s', userType);
     return userType === 'guest';
   }
+
+  static async handleUpgrade(params: { username: string; password: string }): Promise<boolean> {
+    // Validate
+    if (!params.username || params.username.length < 3 || params.username.length > 30) {
+      ToastDialog.showToast({ message: '用户名需3-30字符' })
+      return false
+    }
+    if (!params.password || params.password.length < 6) {
+      ToastDialog.showToast({ message: '密码至少6字符' })
+      return false
+    }
+
+    const res = await AuthApis.upgrade(params)
+    if (res.code === 0 && res.data) {
+      AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
+      AuthCache.setUserId(res.data.user?.id ?? '')
+      AuthCache.setUserType('full')
+      iData.global.isLogin = true
+      ToastDialog.showToast({ message: '升级成功' })
+      return true
+    } else {
+      ToastDialog.showToast({ message: res.msg || '升级失败' })
+      return false
+    }
+  }
 }

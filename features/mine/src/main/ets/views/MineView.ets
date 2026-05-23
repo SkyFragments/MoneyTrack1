@@ -3,10 +3,15 @@ import { CommonHeader, ContainerColumn, iData, RouterMap, RouterModule } from 'c
 import { BillInfoCard } from '../components/BillInfoCard';
 import { MineVM } from '../viewmodels/MineVM';
 import { LoginUtil } from '../viewmodels/LoginVM';
+import { UIDialog } from '@hw-agconnect/ui-dialog';
+import { TextInput } from '@kit.ArkUI';
 
 @ComponentV2
 export struct MineView {
   vm: MineVM = new MineVM();
+  @Local showUpgradeDialog: boolean = false;
+  @Local upgradeUsername: string = '';
+  @Local upgradePassword: string = '';
 
   aboutToAppear(): void {
     // 加载记账统计信息
@@ -137,7 +142,31 @@ export struct MineView {
             .controlSize(ControlSize.SMALL)
             .backgroundColor($r('app.color.v_diamond_theme'))
             .onClick(() => {
-              // TODO: open upgrade dialog - this will be implemented in Task 6
+              this.upgradeUsername = ''
+              this.upgradePassword = ''
+              UIDialog.open({
+                contentBuilder: () => this.upgradeDialogBuilder(),
+                confirmButtonOptions: {
+                  button: '确认升级',
+                  buttonFontColor: $r('app.color.v_diamond_theme'),
+                },
+                cancelButtonOptions: {
+                  button: '取消',
+                  buttonFontColor: $r('app.color.font_color_level1'),
+                },
+                onConfirm: async () => {
+                  const success = await LoginUtil.handleUpgrade({
+                    username: this.upgradeUsername,
+                    password: this.upgradePassword
+                  })
+                  if (success) {
+                    UIDialog.closeLast()
+                  }
+                },
+                onCancel: () => {
+                  UIDialog.closeLast()
+                }
+              })
             })
         }
         .width($r('app.string.width_percent_full'))
@@ -162,6 +191,44 @@ export struct MineView {
       .height('148')
       .width($r('app.string.width_percent_full'))
       .alignItems(HorizontalAlign.Start)
+    }
+  }
+
+  @Builder upgradeDialogBuilder() {
+    Column({ space: 16 }) {
+      Text('设置用户名和密码以升级账号，升级后可启用云同步功能。')
+        .fontSize(14)
+        .fontColor($r('app.color.font_color_level1'))
+        .textAlign(TextAlign.Center)
+        .width('100%')
+        .margin({ bottom: 8 })
+
+      TextInput({ placeholder: '用户名（3-30字符）', text: this.upgradeUsername })
+        .width('100%')
+        .height(44)
+        .backgroundColor($r('sys.color.comp_background_tertiary'))
+        .borderRadius(8)
+        .onChange((value: string) => {
+          this.upgradeUsername = value
+        })
+
+      TextInput({ placeholder: '密码（至少6字符）', text: this.upgradePassword })
+        .width('100%')
+        .height(44)
+        .backgroundColor($r('sys.color.comp_background_tertiary'))
+        .borderRadius(8)
+        .type(InputType.Password)
+        .onChange((value: string) => {
+          this.upgradePassword = value
+        })
+    }
+    .width('100%')
+    .padding(16)
+  }
+
+  aboutToDisappear(): void {
+    if (this.showUpgradeDialog) {
+      UIDialog.closeLast()
     }
   }
 }

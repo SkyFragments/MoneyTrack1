@@ -68,6 +68,10 @@ class AuthApis {
   public huaweiLogin(params: HuaweiLoginParams): Promise<BaseResponse<HuaweiLoginData>> {
     return request.post(RequestUrlMap.AUTH_HUAWEI_LOGIN, params)
   }
+
+  public upgrade(params: { username: string; password: string }): Promise<BaseResponse<LoginResponseData>> {
+    return request.post(RequestUrlMap.AUTH_UPGRADE, params)
+  }
 }
 
 const instance = new AuthApis();
