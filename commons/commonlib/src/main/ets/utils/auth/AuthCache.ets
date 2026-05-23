@@ -8,6 +8,8 @@ export class AuthCacheModel {
   public refreshToken: string = '';
   @Trace
   public userId: string = '';
+  @Trace
+  public userType: string = '';
 }
 
 const AUTH_CACHE_KEY = 'AuthCacheModel';
@@ -45,11 +47,27 @@ class AuthCache {
     return AuthCache.getInstance().refreshToken;
   }
 
+  static getUserType(): 'full' | 'guest' | null {
+    const type = AuthCache.getInstance().userType;
+    return type === '' ? null : type as 'full' | 'guest';
+  }
+
+  static setUserType(type: 'full' | 'guest'): void {
+    const cache = AuthCache.getInstance();
+    cache.userType = type;
+  }
+
+  static clearUserType(): void {
+    const cache = AuthCache.getInstance();
+    cache.userType = '';
+  }
+
   static clear(): void {
     const cache = AuthCache.getInstance();
     cache.accessToken = '';
     cache.refreshToken = '';
     cache.userId = '';
+    cache.userType = '';
   }
 }
 
