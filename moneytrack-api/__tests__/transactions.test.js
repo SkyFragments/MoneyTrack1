@@ -15,7 +15,7 @@ describe('Transactions API', () => {
     // Register, login, and create an account
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'tx@test.com', password: 'password123' });
+      .send({ username: 'txuser', password: 'password123' });
 
     authToken = registerRes.body.data.accessToken;
 

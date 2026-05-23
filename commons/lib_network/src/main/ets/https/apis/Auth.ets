@@ -30,12 +30,12 @@ interface MeResponseData {
 }
 
 interface LoginParams {
-  email: string;
+  username: string;
   password: string;
 }
 
 interface RegisterParams {
-  email: string;
+  username: string;
   password: string;
 }
 

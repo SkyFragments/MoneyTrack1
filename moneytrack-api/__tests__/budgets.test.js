@@ -14,7 +14,7 @@ describe('Budgets API', () => {
 
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'budgets@test.com', password: 'password123' });
+      .send({ username: 'budgetsuser', password: 'password123' });
     authToken = registerRes.body.data.accessToken;
 
     const accountRes = await request(appInstance)

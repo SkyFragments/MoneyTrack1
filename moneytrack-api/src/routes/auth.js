@@ -31,37 +31,41 @@ function generateTokens(userId) {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ code: 400, msg: 'Email and password are required' });
+    if (!username || !password) {
+      return res.status(400).json({ code: 400, msg: 'Username and password are required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ code: 400, msg: 'Invalid email format' });
+    if (typeof username !== 'string' || username.length < 3 || username.length > 30) {
+      return res.status(400).json({ code: 400, msg: 'Username must be 3-30 characters' });
     }
 
-    // Validate password strength: min 6 chars
     if (typeof password !== 'string' || password.length < 6) {
       return res.status(400).json({ code: 400, msg: 'Password must be at least 6 characters' });
     }
 
-    const user = await userService.createUser(email, password);
+    const user = await userService.createUser(username, password);
     const { accessToken, refreshToken } = generateTokens(user.id);
 
     res.json({ code: 0, data: { user, accessToken, refreshToken } });
   } catch (err) {
+    if (err.message.includes('UNIQUE')) {
+      return res.status(400).json({ code: 400, msg: 'Username already exists' });
+    }
     res.status(400).json({ code: 400, msg: err.message });
   }
 });
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  const user = await userService.validateUser(email, password);
+  if (!username || !password) {
+    return res.status(400).json({ code: 400, msg: 'Username and password are required' });
+  }
+
+  const user = await userService.validateUser(username, password);
   if (!user) {
     return res.status(401).json({ code: 401, msg: 'Invalid credentials' });
   }

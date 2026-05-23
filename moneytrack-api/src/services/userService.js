@@ -4,26 +4,28 @@ const { getDb, saveDbAsync } = require('../db');
 
 const SALT_ROUNDS = 10;
 
-async function createUser(email, password) {
+async function createUser(username, password, email = null) {
   const db = await getDb();
   const id = uuidv4();
   const now = new Date().toISOString();
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
   const stmt = db.prepare(
-    'INSERT INTO users (id, email, password, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO users (id, username, email, password, userType, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
-  stmt.run([id, email, hashedPassword, now, now]);
+  stmt.run([id, username, email, hashedPassword, 'full', now, now]);
   stmt.free();
   await saveDbAsync();
 
-  return { id, email, createdAt: now };
+  return { id, username, email, createdAt: now };
 }
 
-async function validateUser(email, password) {
+async function validateUser(usernameOrEmail, password) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, email, password, createdAt FROM users WHERE email = ? AND deleted = 0');
-  stmt.bind([email]);
+  const stmt = db.prepare(
+    'SELECT id, username, email, password, createdAt FROM users WHERE (username = ? OR email = ?) AND deleted = 0'
+  );
+  stmt.bind([usernameOrEmail, usernameOrEmail]);
   stmt.step();
   const user = stmt.getAsObject();
   stmt.free();
@@ -37,12 +39,12 @@ async function validateUser(email, password) {
     return null;
   }
 
-  return { id: user.id, email: user.email, createdAt: user.createdAt };
+  return { id: user.id, username: user.username, email: user.email, createdAt: user.createdAt };
 }
 
 async function findById(id) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, email, createdAt FROM users WHERE id = ? AND deleted = 0');
+  const stmt = db.prepare('SELECT id, username, email, createdAt FROM users WHERE id = ? AND deleted = 0');
   stmt.bind([id]);
   stmt.step();
   const user = stmt.getAsObject();

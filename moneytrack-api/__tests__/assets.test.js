@@ -13,7 +13,7 @@ describe('Assets API', () => {
 
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'assets@test.com', password: 'password123' });
+      .send({ username: 'assetsuser', password: 'password123' });
     authToken = registerRes.body.data.accessToken;
   });
 

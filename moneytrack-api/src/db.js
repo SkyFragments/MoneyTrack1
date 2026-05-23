@@ -81,9 +81,11 @@ async function initializeDatabase() {
   database.run(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT,
       password TEXT,
       huaweiOpenId TEXT,
+      userType TEXT DEFAULT 'full',
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       deleted INTEGER DEFAULT 0

@@ -44,12 +44,12 @@ describe('Security', () => {
       for (let i = 0; i < 20; i++) {
         await request(appInstance)
           .post('/api/auth/register')
-          .send({ email: 'rapidfix4' + i + '@test.com', password: 'password123' });
+          .send({ username: 'rapidfix4' + i, password: 'password123' });
       }
 
       const res = await request(appInstance)
         .post('/api/auth/register')
-        .send({ email: 'rapidfix421@test.com', password: 'password123' });
+        .send({ username: 'rapidfix421', password: 'password123' });
 
       expect(res.status).toBe(429);
       expect(res.body.code).toBe(429);
@@ -60,7 +60,7 @@ describe('Security', () => {
     it('should include CORS headers on responses', async () => {
       const res = await request(appInstance)
         .post('/api/auth/login')
-        .send({ email: 'cors3@test.com', password: 'password123' });
+        .send({ username: 'corsuser', password: 'password123' });
 
       expect(res.headers).toHaveProperty('access-control-allow-origin');
     });

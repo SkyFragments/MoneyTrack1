@@ -15,7 +15,7 @@ describe('Accounts API', () => {
     // Register and login to get token
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'accounts@test.com', password: 'password123' });
+      .send({ username: 'accountsuser', password: 'password123' });
 
     authToken = registerRes.body.data.accessToken;
     userId = registerRes.body.data.user.id;

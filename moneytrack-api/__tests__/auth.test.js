@@ -32,17 +32,17 @@ describe('Auth API', () => {
     it('should register a new user successfully', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'test@example.com', password: 'password123' });
+        .send({ username: 'testuser', password: 'password123' });
 
       expect(res.status).toBe(200);
       expect(res.body.code).toBe(0);
       expect(res.body.data).toHaveProperty('user');
       expect(res.body.data).toHaveProperty('accessToken');
       expect(res.body.data).toHaveProperty('refreshToken');
-      expect(res.body.data.user.email).toBe('test@example.com');
+      expect(res.body.data.user.username).toBe('testuser');
     });
 
-    it('should reject registration with missing email', async () => {
+    it('should reject registration with missing username', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({ password: 'password123' });
@@ -54,16 +54,16 @@ describe('Auth API', () => {
     it('should reject registration with missing password', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'test2@example.com' });
+        .send({ username: 'test2' });
 
       expect(res.status).toBe(400);
       expect(res.body.code).toBe(400);
     });
 
-    it('should reject registration with invalid email format', async () => {
+    it('should reject registration with username too short', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'not-an-email', password: 'password123' });
+        .send({ username: 'ab', password: 'password123' });
 
       expect(res.status).toBe(400);
     });
@@ -71,7 +71,7 @@ describe('Auth API', () => {
     it('should reject weak passwords', async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'weak@example.com', password: '123' });
+        .send({ username: 'weakuser', password: '123' });
 
       expect(res.status).toBe(400);
     });
@@ -82,13 +82,13 @@ describe('Auth API', () => {
       // Create a test user
       await request(app)
         .post('/api/auth/register')
-        .send({ email: 'login@example.com', password: 'password123' });
+        .send({ username: 'loginuser', password: 'password123' });
     });
 
     it('should login with valid credentials', async () => {
       const res = await request(app)
         .post('/api/auth/login')
-        .send({ email: 'login@example.com', password: 'password123' });
+        .send({ username: 'loginuser', password: 'password123' });
 
       expect(res.status).toBe(200);
       expect(res.body.code).toBe(0);
@@ -99,7 +99,7 @@ describe('Auth API', () => {
     it('should reject invalid password', async () => {
       const res = await request(app)
         .post('/api/auth/login')
-        .send({ email: 'login@example.com', password: 'wrongpassword' });
+        .send({ username: 'loginuser', password: 'wrongpassword' });
 
       expect(res.status).toBe(401);
       expect(res.body.code).toBe(401);
@@ -108,7 +108,7 @@ describe('Auth API', () => {
     it('should reject non-existent user', async () => {
       const res = await request(app)
         .post('/api/auth/login')
-        .send({ email: 'nonexistent@example.com', password: 'password123' });
+        .send({ username: 'nonexistent', password: 'password123' });
 
       expect(res.status).toBe(401);
       expect(res.body.code).toBe(401);
@@ -121,7 +121,7 @@ describe('Auth API', () => {
     beforeAll(async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'refresh@example.com', password: 'password123' });
+        .send({ username: 'refreshuser', password: 'password123' });
       refreshToken = res.body.data.refreshToken;
     });
 
@@ -151,7 +151,7 @@ describe('Auth API', () => {
     beforeAll(async () => {
       const res = await request(app)
         .post('/api/auth/register')
-        .send({ email: 'me@example.com', password: 'password123' });
+        .send({ username: 'meuser', password: 'password123' });
       accessToken = res.body.data.accessToken;
     });
 
@@ -162,7 +162,7 @@ describe('Auth API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.code).toBe(0);
-      expect(res.body.data).toHaveProperty('email');
+      expect(res.body.data).toHaveProperty('username');
     });
 
     it('should reject request without token', async () => {

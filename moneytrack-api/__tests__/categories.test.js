@@ -13,7 +13,7 @@ describe('Categories API', () => {
 
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'cats@test.com', password: 'password123' });
+      .send({ username: 'catsuser', password: 'password123' });
     authToken = registerRes.body.data.accessToken;
   });
 

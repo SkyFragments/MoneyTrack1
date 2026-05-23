@@ -13,7 +13,7 @@ describe('Sync API', () => {
 
     const registerRes = await request(appInstance)
       .post('/api/auth/register')
-      .send({ email: 'sync@test.com', password: 'password123' });
+      .send({ username: 'syncuser', password: 'password123' });
     authToken = registerRes.body.data.accessToken;
   });
 
