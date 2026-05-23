@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const { initializeDatabase } = require('./db');
 const authMiddleware = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
+const guestRoutes = require('./routes/guest');
 const categoryRoutes = require('./routes/categories');
 const accountRoutes = require('./routes/accounts');
 const transactionRoutes = require('./routes/transactions');
@@ -46,6 +47,9 @@ const authLimiter = rateLimit({
 
 // Auth routes (public, with rate limiting)
 app.use('/api/auth', authLimiter, authRoutes);
+
+// Guest routes (public, for creating guest accounts)
+app.use('/api/guest', guestRoutes);
 
 // Protected routes (require auth)
 app.use('/api/categories', authMiddleware, categoryRoutes);

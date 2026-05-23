@@ -132,4 +132,36 @@ router.get('/me', authMiddleware, async (req, res) => {
   res.json({ code: 0, data: user });
 });
 
+// POST /api/auth/upgrade
+router.post('/upgrade', authMiddleware, async (req, res) => {
+  const { username, password } = req.body;
+
+  if (req.userType !== 'guest') {
+    return res.status(400).json({ code: 400, msg: 'User is not a guest' });
+  }
+
+  if (!username || !password) {
+    return res.status(400).json({ code: 400, msg: 'Username and password are required' });
+  }
+
+  if (typeof username !== 'string' || username.length < 3 || username.length > 30) {
+    return res.status(400).json({ code: 400, msg: 'Username must be 3-30 characters' });
+  }
+
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ code: 400, msg: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    const user = await userService.upgradeGuestUser(req.userId, username, password);
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    res.json({ code: 0, data: { user, accessToken, refreshToken } });
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) {
+      return res.status(400).json({ code: 400, msg: 'Username already exists' });
+    }
+    res.status(400).json({ code: 400, msg: err.message });
+  }
+});
+
 module.exports = router;

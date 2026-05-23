@@ -79,10 +79,43 @@ async function createFromHuawei(openId, email) {
   return { id, email, huaweiOpenId: openId, createdAt: now };
 }
 
+async function createGuestUser() {
+  const db = await getDb();
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  const username = 'guest_' + id.slice(0, 8);
+
+  const stmt = db.prepare(
+    'INSERT INTO users (id, username, userType, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
+  );
+  stmt.run([id, username, 'guest', now, now]);
+  stmt.free();
+  await saveDbAsync();
+
+  return { id, username, userType: 'guest', createdAt: now };
+}
+
+async function upgradeGuestUser(userId, username, password) {
+  const db = await getDb();
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const now = new Date().toISOString();
+
+  const stmt = db.prepare(
+    'UPDATE users SET username = ?, password = ?, userType = ?, updatedAt = ? WHERE id = ? AND deleted = 0'
+  );
+  stmt.run([username, hashedPassword, 'full', now, userId]);
+  stmt.free();
+  await saveDbAsync();
+
+  return findById(userId);
+}
+
 module.exports = {
   createUser,
   validateUser,
   findById,
   findByHuaweiOpenId,
-  createFromHuawei
+  createFromHuawei,
+  createGuestUser,
+  upgradeGuestUser
 };
