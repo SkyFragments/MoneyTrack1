@@ -3,7 +3,7 @@ import { common } from '@kit.AbilityKit';
 import * as wxopensdk from '@tencent/wechat_open_sdk';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
-import { LoginController, LoginParams, LoginChannelType } from 'aggregated_login';
+import { LoginController, LoginParams, LoginChannelType, RegisterParams } from 'aggregated_login';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
 import { AuthApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
@@ -100,6 +100,33 @@ export class LoginUtil {
           LoginUtil.handleLoginEvent('华为一键登录成功')
         },
       })
+    }
+  }
+
+  static async handleRegister(params: RegisterParams, registerConfirmPassword: string): Promise<void> {
+    if (params.password !== registerConfirmPassword) {
+      ToastDialog.showToast({ message: '两次密码不一致' })
+      return
+    }
+    if (params.username.length < 3 || params.username.length > 30) {
+      ToastDialog.showToast({ message: '用户名需3-30字符' })
+      return
+    }
+    if (params.password.length < 6) {
+      ToastDialog.showToast({ message: '密码至少6字符' })
+      return
+    }
+
+    const res = await AuthApis.register(params)
+    if (res.code === 0 && res.data) {
+      AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
+      AuthCache.setUserId(res.data.user.id)
+      AuthCache.setUserType('full')
+      iData.global.isLogin = true
+      ToastDialog.showToast({ message: '注册成功' })
+      RouterModule.pop()
+    } else {
+      ToastDialog.showToast({ message: res.msg || '注册失败' })
     }
   }
 }

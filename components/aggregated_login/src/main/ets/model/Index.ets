@@ -39,6 +39,11 @@ export class LoginParams {
   authorizationCode?: string = '';
 }
 
+export interface RegisterParams {
+  username: string;
+  password: string;
+}
+
 @ObservedV2
 export class NavParam {
   @Trace privacyContent: PrivacyContent[] = [];

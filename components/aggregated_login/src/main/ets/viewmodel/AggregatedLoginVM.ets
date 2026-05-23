@@ -270,6 +270,7 @@ export class AggregatedLoginVM {
         this.unionID = util.generateRandomUUID();
         this.openID = util.generateRandomUUID();
         this.anonymousPhone = '123****8900';
+        this.authorizationCode = util.generateRandomUUID();
         hilog.error(this.domainId, this.logTag,
           `Failed to execute request. Code is ${error.code}, Message is ${error.message}`);
       });
