@@ -7,6 +7,10 @@ import { LoginController, LoginParams, LoginChannelType, RegisterParams } from '
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
 import { AuthApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = 'LoginVM';
+const DOMAIN = 0x0000;
 
 export class ProtocolData {
   static termOfServiceProtocol: string = 'TERMS_HTML_PLACEHOLDER';
@@ -128,5 +132,11 @@ export class LoginUtil {
     } else {
       ToastDialog.showToast({ message: res.msg || '注册失败' })
     }
+  }
+
+  static checkGuestMode(): boolean {
+    const userType = AuthCache.getUserType();
+    hilog.info(DOMAIN, TAG, 'checkGuestMode: userType=%{public}s', userType);
+    return userType === 'guest';
   }
 }

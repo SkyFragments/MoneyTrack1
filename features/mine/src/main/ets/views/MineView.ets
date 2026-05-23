@@ -2,6 +2,7 @@ import { SettingCard } from 'app_setting';
 import { CommonHeader, ContainerColumn, iData, RouterMap, RouterModule } from 'commonlib';
 import { BillInfoCard } from '../components/BillInfoCard';
 import { MineVM } from '../viewmodels/MineVM';
+import { LoginUtil } from '../viewmodels/LoginVM';
 
 @ComponentV2
 export struct MineView {
@@ -77,6 +78,15 @@ export struct MineView {
               }
               .alignItems(VerticalAlign.Center)
             }
+            if (LoginUtil.checkGuestMode()) {
+              Text('本地模式')
+                .fontSize($r('sys.float.Body_S'))
+                .fontColor($r('sys.color.font_secondary'))
+                .backgroundColor($r('sys.color.comp_background_tertiary'))
+                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                .borderRadius(4)
+                .margin({ left: 8 })
+            }
           }.alignItems(VerticalAlign.Top)
 
           Row() {
@@ -114,6 +124,20 @@ export struct MineView {
             .backgroundColor($r('app.color.v_diamond_theme'))
             .onClick(() => {
               RouterModule.push({ url: RouterMap.MEMBERSHIP })
+            })
+        }
+        .width($r('app.string.width_percent_full'))
+        .justifyContent(FlexAlign.SpaceBetween)
+      }
+      if (LoginUtil.checkGuestMode()) {
+        Divider().margin({ top: $r('app.string.space_m'), bottom: $r('app.string.space_m') })
+        Row() {
+          Text('登录后可开启云同步').fontSize(14).fontColor($r('app.color.font_color_level1'))
+          Button('升级到完整账号')
+            .controlSize(ControlSize.SMALL)
+            .backgroundColor($r('app.color.v_diamond_theme'))
+            .onClick(() => {
+              // TODO: open upgrade dialog - this will be implemented in Task 6
             })
         }
         .width($r('app.string.width_percent_full'))
