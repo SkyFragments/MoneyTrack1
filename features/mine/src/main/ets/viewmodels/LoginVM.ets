@@ -36,7 +36,8 @@ export class LoginUtil {
   }
 
   static async wxLogin(): Promise<void> {
-    return LoginUtil.handleLoginEvent('微信登录成功')
+    // TODO: implement WeChat login — currently shows placeholder
+    ToastDialog.showToast({ message: '微信登录开发中' })
   }
 
   static async verifyCodeLogin(loginParams: LoginParams): Promise<void> {
@@ -66,54 +67,64 @@ export class LoginUtil {
 
   static async handleLoginEvent(msg: string, loginParams?: LoginParams, isOtherPage: boolean = false): Promise<void> {
     if (loginParams?.unionID) {
-      const huaweiRes = await AuthApis.huaweiLogin({ openId: loginParams.unionID });
-      if (huaweiRes.code === 0 && huaweiRes.data) {
-        const loginData = huaweiRes.data;
-        AuthCache.setTokens(loginData.accessToken, loginData.refreshToken);
-        if (loginData.user?.id) {
-          AuthCache.setUserId(loginData.user.id);
-        }
-        iData.global.isLogin = true;
-        ToastDialog.showToast({ message: msg });
-        const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
-        if (memberList.nonRenewList.length) {
-          iData.global.userInfo.isMember = true;
-        }
-        RouterModule.pop();
-        if (isOtherPage) {
-          if (loginParams?.phoneNumbers?.length === 11) {
-            iData.global.userInfo.anonymousPhone =
-              loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+      try {
+        const huaweiRes = await AuthApis.huaweiLogin({ openId: loginParams.unionID });
+        if (huaweiRes.code === 0 && huaweiRes.data) {
+          const loginData = huaweiRes.data;
+          AuthCache.setTokens(loginData.accessToken, loginData.refreshToken);
+          if (loginData.user?.id) {
+            AuthCache.setUserId(loginData.user.id);
+          }
+          iData.global.isLogin = true;
+          ToastDialog.showToast({ message: msg });
+          const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
+          if (memberList.nonRenewList.length) {
+            iData.global.userInfo.isMember = true;
           }
           RouterModule.pop();
+          if (isOtherPage) {
+            if (loginParams?.phoneNumbers?.length === 11) {
+              iData.global.userInfo.anonymousPhone =
+                loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+            }
+            RouterModule.pop();
+          }
+        } else {
+          ToastDialog.showToast({ message: huaweiRes.msg || '登录失败' });
         }
+      } catch (error) {
+        ToastDialog.showToast({ message: '网络错误，请稍后重试' });
       }
     } else {
-      const phoneRes = await AuthApis.phoneLogin({
-        phoneNumber: loginParams?.phoneNumbers ?? '',
-        code: loginParams?.verifyCode ?? ''
-      });
-      if (phoneRes.code === 0 && phoneRes.data) {
-        AuthCache.setTokens(phoneRes.data.accessToken, phoneRes.data.refreshToken);
-        if (phoneRes.data.user?.id) {
-          AuthCache.setUserId(phoneRes.data.user.id);
-        }
-        iData.global.isLogin = true;
-        ToastDialog.showToast({ message: msg });
-        const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
-        if (memberList.nonRenewList.length) {
-          iData.global.userInfo.isMember = true;
-        }
-        RouterModule.pop();
-        if (isOtherPage) {
-          if (loginParams?.phoneNumbers?.length === 11) {
-            iData.global.userInfo.anonymousPhone =
-              loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+      try {
+        const phoneRes = await AuthApis.phoneLogin({
+          phoneNumber: loginParams?.phoneNumbers ?? '',
+          code: loginParams?.verifyCode ?? ''
+        });
+        if (phoneRes.code === 0 && phoneRes.data) {
+          AuthCache.setTokens(phoneRes.data.accessToken, phoneRes.data.refreshToken);
+          if (phoneRes.data.user?.id) {
+            AuthCache.setUserId(phoneRes.data.user.id);
+          }
+          iData.global.isLogin = true;
+          ToastDialog.showToast({ message: msg });
+          const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
+          if (memberList.nonRenewList.length) {
+            iData.global.userInfo.isMember = true;
           }
           RouterModule.pop();
+          if (isOtherPage) {
+            if (loginParams?.phoneNumbers?.length === 11) {
+              iData.global.userInfo.anonymousPhone =
+                loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+            }
+            RouterModule.pop();
+          }
+        } else {
+          ToastDialog.showToast({ message: phoneRes.msg || '登录失败' });
         }
-      } else {
-        ToastDialog.showToast({ message: phoneRes.msg || '登录失败' });
+      } catch (error) {
+        ToastDialog.showToast({ message: '网络错误，请稍后重试' });
       }
     }
   }
@@ -198,5 +209,8 @@ export class LoginUtil {
       ToastDialog.showToast({ message: res.msg || '升级失败' })
       return false
     }
+  } catch (error) {
+    ToastDialog.showToast({ message: '网络错误，请稍后重试' })
+    return false
   }
 }

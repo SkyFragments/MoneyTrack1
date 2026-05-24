@@ -81,6 +81,7 @@ export class AggregatedLoginVM {
     this.phoneNum = '';
     this.verifyCode = '';
     this.verifyCodeTime = 0;
+    this.persistenceData.phoneNumber = '';
     clearInterval(this.timer);
   }
 

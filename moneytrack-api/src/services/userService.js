@@ -133,7 +133,7 @@ async function upgradeGuestUser(userId, username, password) {
   stmt.free();
   await saveDbAsync();
 
-  return { id: userId, username, userType: 'full', createdAt: now };
+  return await findById(userId);
 }
 
 module.exports = {

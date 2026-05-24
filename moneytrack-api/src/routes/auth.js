@@ -115,8 +115,8 @@ router.post('/phone-login', async (req, res) => {
     return res.status(401).json({ code: 401, msg: 'Invalid or expired verification code' });
   }
 
-  const delStmt = db.prepare('UPDATE verify_codes SET deleted = 1 WHERE phone = ?');
-  delStmt.run([phoneNumber]);
+  const delStmt = db.prepare('UPDATE verify_codes SET deleted = 1 WHERE id = ?');
+  delStmt.run([record.id]);
   delStmt.free();
   await saveDbAsync();
 
