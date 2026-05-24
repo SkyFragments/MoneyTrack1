@@ -28,11 +28,6 @@ export struct OtherLoginPage {
 
   aboutToAppear(): void {
     this.vm.registerOnWXRespCallback();
-    const para = this.routerModule.getParamByName('OtherLoginPage')[0] as NavParam;
-    if (para) {
-      this.registerMode = para.registerMode;
-      this.usernameLoginMode = para.usernameLoginMode;
-    }
   }
 
   aboutToDisappear(): void {
@@ -499,7 +494,11 @@ export struct OtherLoginPage {
     .hideTitleBar(true)
     .onReady((ctx: NavDestinationContext) => {
       this.routerModule = ctx.pathStack;
-      this.pageParam = ctx.pathInfo.param as NavParam;
+      const para = ctx.pathInfo.param as NavParam;
+      this.pageParam = para;
+      this.registerMode = para.registerMode;
+      this.usernameLoginMode = para.usernameLoginMode;
+      this.initDone = true;
     })
   }
 }
