@@ -14,7 +14,10 @@ export class AccountingDBConstants {
     date TEXT DEFAULT '01',
     accountIncome REAL DEFAULT 0,
     accountExpense REAL DEFAULT 0,
-    balance REAL DEFAULT 0
+    balance REAL DEFAULT 0,
+    createdAt TEXT NOT NULL DEFAULT '',
+    updatedAt TEXT NOT NULL DEFAULT '',
+    deleted INTEGER DEFAULT 0
   )`;
   public static readonly ACCOUNT_TABLE_INDEXES_CREATE: string[] = [
     'CREATE INDEX IF NOT EXISTS index_type ON accounts (type)',
@@ -29,7 +32,9 @@ export class AccountingDBConstants {
     amount REAL NOT NULL,
     date TEXT NOT NULL,
     note TEXT DEFAULT '',
-    excluded BOOLEAN DEFAULT true,
+    localId INTEGER,
+    excluded INTEGER DEFAULT 0,
+    deleted INTEGER DEFAULT 0,
     FOREIGN KEY (accountId) REFERENCES accounts(accountId) ON DELETE CASCADE,
     FOREIGN KEY (assetId) REFERENCES assets(assetId) ON DELETE CASCADE
   )`;
@@ -47,7 +52,8 @@ export class AccountingDBConstants {
     category INTEGER NOT NULL CHECK(category IN (1, 2)),
     amount REAL NOT NULL DEFAULT 0,
     note TEXT DEFAULT '',
-    isCustom BOOLEAN DEFAULT false
+    isCustom BOOLEAN DEFAULT false,
+    deleted INTEGER DEFAULT 0
   )`;
   public static readonly ASSET_TABLE_INDEXES_CREATE: string[] = [
     'CREATE INDEX IF NOT EXISTS index_type ON assets (type)',
@@ -59,6 +65,7 @@ export class AccountingDBConstants {
     accountId INTEGER NOT NULL,
     month TEXT NOT NULL,
     amount REAL NOT NULL DEFAULT 0,
+    deleted INTEGER DEFAULT 0,
     FOREIGN KEY (accountId) REFERENCES accounts(accountId) ON DELETE CASCADE,
     UNIQUE(accountId, month)
   )`;
