@@ -436,9 +436,12 @@ export struct OtherLoginPage {
         return
       }
       this.vm.registerUser(params.username, params.password).then((success) => {
+        console.info('[OtherLoginPage] registerUser.then called, success=' + success)
         if (success) {
+          console.info('[OtherLoginPage] register success, popping')
           this.routerModule.pop()
         } else {
+          console.info('[OtherLoginPage] register failed, showing toast')
           ToastDialog.showToast({ message: '注册失败，请重试' })
         }
       }).catch((err: Error) => {

@@ -379,10 +379,11 @@ export class AggregatedLoginVM {
   }
 
   async registerUser(username: string, password: string): Promise<boolean> {
+    hilog.info(this.domainId, this.logTag, `registerUser called: username=${username}, registerFn defined=${this.registerFn !== undefined}`);
     if (this.registerFn !== undefined) {
       try {
         const result = await this.registerFn(username, password);
-        hilog.info(this.domainId, this.logTag, `registerUser success: ${result}, username: ${username}`);
+        hilog.info(this.domainId, this.logTag, `registerUser registerFn result: ${result}`);
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -390,6 +391,7 @@ export class AggregatedLoginVM {
         throw new Error(msg);
       }
     }
+    hilog.error(this.domainId, this.logTag, `registerUser: registerFn is undefined, returning false`);
     return false;
   }
 
