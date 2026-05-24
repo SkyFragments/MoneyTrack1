@@ -441,11 +441,12 @@ export struct OtherLoginPage {
         if (success) {
           this.routerModule.pop();
         } else {
+          console.info('[OtherLoginPage] register failed (false), showing toast');
           ToastDialog.showToast({ message: '注册失败，请重试' });
         }
       }).catch((err: Error) => {
         console.error('[OtherLoginPage] registerUser.catch:', err && err.message, JSON.stringify(err));
-        ToastDialog.showToast({ message: '注册异常: ' + (err && err.message || '未知错误') });
+        ToastDialog.showToast({ message: '注册失败: ' + (err && err.message || '未知错误') });
       });
     })
 

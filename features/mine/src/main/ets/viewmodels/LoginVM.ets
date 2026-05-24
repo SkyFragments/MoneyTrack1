@@ -186,9 +186,11 @@ export class LoginUtil {
         iData.global.isLogin = true
         return true
       }
-      return false
+      throw new Error(res.msg || '注册失败，code=' + res.code)
     } catch (_err) {
-      return false
+      const msg = _err instanceof Error ? _err.message : String(_err)
+      console.error('[LoginVM] registerUser error:', msg)
+      throw new Error(msg)
     }
   }
 
