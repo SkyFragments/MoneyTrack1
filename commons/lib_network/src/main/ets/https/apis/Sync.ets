@@ -17,6 +17,17 @@ interface SyncPullResult {
   serverTime: number | string;
 }
 
+interface SyncPushData {
+  accounts?: object[];
+  transactions?: object[];
+  assets?: object[];
+  budgets?: object[];
+}
+
+interface SyncedResult {
+  synced: number;
+}
+
 class SyncApis {
   public pull(params?: object): Promise<BaseResponse<SyncPullResult>> {
     if (AuthCache.getUserType() === 'guest') {
@@ -26,10 +37,10 @@ class SyncApis {
     return request.get(RequestUrlMap.SYNC_PULL, { params })
   }
 
-  public push(data?: { accounts?: object[]; transactions?: object[]; assets?: object[]; budgets?: object[] }): Promise<BaseResponse<{ synced: number }>> {
+  public push(data?: SyncPushData): Promise<BaseResponse<SyncedResult>> {
     if (AuthCache.getUserType() === 'guest') {
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync push');
-      return Promise.resolve({ code: 0, data: { synced: 0 } } as BaseResponse<{ synced: number }>);
+      return Promise.resolve({ code: 0, data: { synced: 0 } } as BaseResponse<SyncedResult>);
     }
     return request.post(RequestUrlMap.SYNC_PUSH, data)
   }

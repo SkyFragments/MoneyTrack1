@@ -3,7 +3,8 @@ import { Constants, LoginType } from '../common/Constant';
 import { AggregatedLoginVM } from '../viewmodel/AggregatedLoginVM';
 import { AgreePrivacyBox } from './AgreePrivacyBox';
 import { LoginSheetUtils } from '../utils/LoginSheetUtils';
-import { LoginUtil } from '../../../features/mine/src/main/ets/viewmodels/LoginVM';
+import { LoginUtil } from 'commonlib';
+import type { RegisterParams as AuthRegisterParams } from 'lib_network';
 
 @Builder
 function OtherLoginPageBuilder() {
