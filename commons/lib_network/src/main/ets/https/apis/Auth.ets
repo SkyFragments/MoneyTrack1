@@ -48,6 +48,15 @@ interface HuaweiLoginParams {
   email?: string;
 }
 
+interface PhoneLoginParams {
+  phoneNumber: string;
+  code: string;
+}
+
+interface PhoneSendParams {
+  phoneNumber: string;
+}
+
 class AuthApis {
   public me(): Promise<BaseResponse<MeResponseData>> {
     return request.get(RequestUrlMap.AUTH_ME)
@@ -71,6 +80,14 @@ class AuthApis {
 
   public upgrade(params: { username: string; password: string }): Promise<BaseResponse<LoginResponseData>> {
     return request.post(RequestUrlMap.AUTH_UPGRADE, params)
+  }
+
+  public phoneLoginSend(params: PhoneSendParams): Promise<BaseResponse> {
+    return request.post(RequestUrlMap.AUTH_PHONE_SEND, params)
+  }
+
+  public phoneLogin(params: PhoneLoginParams): Promise<BaseResponse<LoginResponseData>> {
+    return request.post(RequestUrlMap.AUTH_PHONE_LOGIN, params)
   }
 }
 

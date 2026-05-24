@@ -64,6 +64,32 @@ async function findByHuaweiOpenId(openId) {
   return user;
 }
 
+async function findByPhone(phone) {
+  const db = await getDb();
+  const stmt = db.prepare('SELECT id, phone, userType, createdAt FROM users WHERE phone = ? AND deleted = 0');
+  stmt.bind([phone]);
+  stmt.step();
+  const user = stmt.getAsObject();
+  stmt.free();
+
+  return user;
+}
+
+async function createUserFromPhone(phone) {
+  const db = await getDb();
+  const id = uuidv4();
+  const now = new Date().toISOString();
+
+  const stmt = db.prepare(
+    'INSERT INTO users (id, phone, userType, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
+  );
+  stmt.run([id, phone, 'full', now, now]);
+  stmt.free();
+  await saveDbAsync();
+
+  return { id, phone, userType: 'full', createdAt: now };
+}
+
 async function createFromHuawei(openId, email) {
   const db = await getDb();
   const id = uuidv4();
@@ -115,7 +141,9 @@ module.exports = {
   validateUser,
   findById,
   findByHuaweiOpenId,
+  findByPhone,
   createFromHuawei,
+  createUserFromPhone,
   createGuestUser,
   upgradeGuestUser
 };

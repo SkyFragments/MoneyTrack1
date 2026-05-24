@@ -4,7 +4,7 @@ export { LoginSheetUtils, LoginInfoOptions } from './src/main/ets/utils/LoginShe
 
 export { LoginType, LoginChannelType } from './src/main/ets/common/Constant';
 
-export { Channel, LoginParams, LoginFailError } from './src/main/ets/model/Index';
+export { Channel, LoginParams, LoginFailError, RegisterParams } from './src/main/ets/model/Index';
 
 export { ApiController, LoginController } from './src/main/ets/utils/Utils';
 

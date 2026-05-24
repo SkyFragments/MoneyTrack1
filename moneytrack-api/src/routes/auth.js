@@ -75,6 +75,60 @@ router.post('/login', async (req, res) => {
   res.json({ code: 0, data: { user, accessToken, refreshToken } });
 });
 
+// POST /api/auth/phone-login/send — send verification code
+router.post('/phone-login/send', async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.length !== 11) {
+    return res.status(400).json({ code: 400, msg: 'Invalid phone number' });
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const db = await getDb();
+  const stmt = db.prepare(
+    'INSERT OR REPLACE INTO verify_codes (phone, code, expiresAt, deleted) VALUES (?, ?, datetime("now", "+5 minutes"), 0)'
+  );
+  stmt.run([phoneNumber, code]);
+  stmt.free();
+  await saveDbAsync();
+
+  console.log(`[DEV] SMS code for ${phoneNumber}: ${code}`);
+  res.json({ code: 0, data: { message: 'Verification code sent' } });
+});
+
+// POST /api/auth/phone-login — verify code and login
+router.post('/phone-login', async (req, res) => {
+  const { phoneNumber, code } = req.body;
+
+  if (!phoneNumber || !code) {
+    return res.status(400).json({ code: 400, msg: 'Phone number and code are required' });
+  }
+
+  const db = await getDb();
+  const stmt = db.prepare('SELECT * FROM verify_codes WHERE phone = ? AND code = ? AND expiresAt > datetime("now") AND deleted = 0');
+  stmt.bind([phoneNumber, code]);
+  stmt.step();
+  const record = stmt.getAsObject();
+  stmt.free();
+
+  if (!record || !record.phone) {
+    return res.status(401).json({ code: 401, msg: 'Invalid or expired verification code' });
+  }
+
+  const delStmt = db.prepare('UPDATE verify_codes SET deleted = 1 WHERE phone = ?');
+  delStmt.run([phoneNumber]);
+  delStmt.free();
+  await saveDbAsync();
+
+  let user = await userService.findByPhone(phoneNumber);
+  if (!user) {
+    user = await userService.createUserFromPhone(phoneNumber);
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user.id);
+  res.json({ code: 0, data: { user, accessToken, refreshToken } });
+});
+
 // POST /api/auth/huawei-login
 router.post('/huawei-login', async (req, res) => {
   try {

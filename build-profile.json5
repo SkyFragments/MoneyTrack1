@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001A4A750E77D57254BAF94F873687919135E6EA2E16AAA94B6144B122987D2F125AF93AEF125E42",
-          "profile": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.p7b",
+          "storeFile": "C:/Users/SkyFragments/moneytrack.p12",
+          "storePassword": "0000001D0E2E0E3E34B069900C05DC0BDDEDD07258F9579C0E44D10CCCB3C90FB490DE17183E13DEC1A3E78C76",
+          "keyAlias": "moneytrack",
+          "keyPassword": "0000001D238696AF9AFE167AED106A67921C788760C9D3AD3BBAB9DB3F9569F44B198EE3D2C836A7A34007C21F",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\SkyFragments\\.ohos\\config\\default_MoneyTrack1_sOZYlI4VPtUbfI7KeIjBqu307BIifUakpY67nFl_SWQ=.p12",
-          "storePassword": "0000001AB3C28828484E86DCBD7C24D04FACAADD5A09DB4939CF579B8D0F46BFB912B68F8D89FD439A62"
+          "profile": "D:/Download/moneytrackDebug.p7b",
+          "certpath": "D:/Download/moneytrack.cer"
         }
       }
     ],

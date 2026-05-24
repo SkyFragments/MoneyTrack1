@@ -81,13 +81,24 @@ async function initializeDatabase() {
   database.run(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE,
       email TEXT,
       password TEXT,
+      phone TEXT UNIQUE,
       huaweiOpenId TEXT,
       userType TEXT DEFAULT 'full',
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
+      deleted INTEGER DEFAULT 0
+    )
+  `);
+
+  database.run(`
+    CREATE TABLE IF NOT EXISTS verify_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      phone TEXT NOT NULL,
+      code TEXT NOT NULL,
+      expiresAt TEXT NOT NULL,
       deleted INTEGER DEFAULT 0
     )
   `);

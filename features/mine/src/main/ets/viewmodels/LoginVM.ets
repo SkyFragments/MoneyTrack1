@@ -4,9 +4,8 @@ import * as wxopensdk from '@tencent/wechat_open_sdk';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
 import { LoginController, LoginParams, LoginChannelType, RegisterParams } from 'aggregated_login';
-import { UserLoginReq } from 'lib_network';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
-import { AuthApis, UserApis } from 'lib_network';
+import { AuthApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -56,8 +55,13 @@ export class LoginUtil {
     })
   }
 
-  static async obtainVerifyCode(): Promise<void> {
-    ToastDialog.showToast({ message: '获取验证码为模拟场景，真实获取验证码以业务实现为准' })
+  static async obtainVerifyCode(phoneNumber: string): Promise<void> {
+    try {
+      await AuthApis.phoneLoginSend({ phoneNumber })
+      ToastDialog.showToast({ message: '验证码已发送' })
+    } catch (error) {
+      ToastDialog.showToast({ message: '发送失败，请稍后重试' })
+    }
   }
 
   static async handleLoginEvent(msg: string, loginParams?: LoginParams, isOtherPage: boolean = false): Promise<void> {
@@ -85,10 +89,21 @@ export class LoginUtil {
         }
       }
     } else {
-      const userRes = await UserApis.login(loginParams as UserLoginReq);
-      if (userRes.code === 0 && userRes.data) {
+      const phoneRes = await AuthApis.phoneLogin({
+        phoneNumber: loginParams?.phoneNumbers ?? '',
+        code: loginParams?.verifyCode ?? ''
+      });
+      if (phoneRes.code === 0 && phoneRes.data) {
+        AuthCache.setTokens(phoneRes.data.accessToken, phoneRes.data.refreshToken);
+        if (phoneRes.data.user?.id) {
+          AuthCache.setUserId(phoneRes.data.user.id);
+        }
         iData.global.isLogin = true;
         ToastDialog.showToast({ message: msg });
+        const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
+        if (memberList.nonRenewList.length) {
+          iData.global.userInfo.isMember = true;
+        }
         RouterModule.pop();
         if (isOtherPage) {
           if (loginParams?.phoneNumbers?.length === 11) {
@@ -97,6 +112,8 @@ export class LoginUtil {
           }
           RouterModule.pop();
         }
+      } else {
+        ToastDialog.showToast({ message: phoneRes.msg || '登录失败' });
       }
     }
   }

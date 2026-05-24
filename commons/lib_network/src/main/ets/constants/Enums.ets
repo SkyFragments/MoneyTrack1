@@ -11,6 +11,8 @@ export enum RequestUrlMap {
   AUTH_REFRESH = 'auth/refresh',
   AUTH_HUAWEI_LOGIN = 'auth/huawei-login',
   AUTH_UPGRADE = 'auth/upgrade',
+  AUTH_PHONE_LOGIN = 'auth/phone-login',
+  AUTH_PHONE_SEND = 'auth/phone-login/send',
   /**
    * 用户相关
    */
