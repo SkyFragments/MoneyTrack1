@@ -73,7 +73,7 @@ class AuthCache {
   }
 
   static clear(): void {
-    AuthCacheModel.getInstance().clear();
+    AuthCache.getInstance().clear();
   }
 }
 
