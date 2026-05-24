@@ -387,7 +387,7 @@ export class AggregatedLoginVM {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         hilog.error(this.domainId, this.logTag, `registerUser error: ${msg}, username: ${username}`);
-        throw err;
+        throw new Error(msg);
       }
     }
     return false;
@@ -410,7 +410,7 @@ export class AggregatedLoginVM {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         hilog.error(this.domainId, this.logTag, `usernameLogin error: ${msg}`);
-        throw err;
+        throw new Error(msg);
       }
     }
     return false;
