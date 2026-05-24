@@ -498,7 +498,6 @@ export struct OtherLoginPage {
       this.pageParam = para;
       this.registerMode = para.registerMode;
       this.usernameLoginMode = para.usernameLoginMode;
-      this.initDone = true;
     })
   }
 }
