@@ -419,35 +419,34 @@ export struct OtherLoginPage {
     .fontColor($r('sys.color.font_on_primary'))
     .margin({ top: Constants.LOGIN_MARGIN_TOP })
     .onClick(() => {
-      const params: RegisterParams = {
-        username: this.registerUsername,
-        password: this.registerPassword
+      const pwd = this.registerPassword;
+      const uname = this.registerUsername;
+      console.info('[OtherLoginPage] register button clicked, username=' + uname + ', pwd len=' + pwd.length);
+      if (pwd !== this.registerConfirmPassword) {
+        ToastDialog.showToast({ message: '两次密码不一致' });
+        return;
       }
-      if (this.registerPassword !== this.registerConfirmPassword) {
-        ToastDialog.showToast({ message: '两次密码不一致' })
-        return
+      if (uname.length < 3 || uname.length > 30) {
+        ToastDialog.showToast({ message: '用户名需3-30字符' });
+        return;
       }
-      if (this.registerUsername.length < 3 || this.registerUsername.length > 30) {
-        ToastDialog.showToast({ message: '用户名需3-30字符' })
-        return
+      if (pwd.length < 6) {
+        ToastDialog.showToast({ message: '密码至少6字符' });
+        return;
       }
-      if (this.registerPassword.length < 6) {
-        ToastDialog.showToast({ message: '密码至少6字符' })
-        return
-      }
-      this.vm.registerUser(params.username, params.password).then((success) => {
-        console.info('[OtherLoginPage] registerUser.then called, success=' + success)
+      const p = this.vm.registerUser(uname, pwd);
+      console.info('[OtherLoginPage] registerUser promise:', p);
+      p.then((success) => {
+        console.info('[OtherLoginPage] registerUser.then success=' + success);
         if (success) {
-          console.info('[OtherLoginPage] register success, popping')
-          this.routerModule.pop()
+          this.routerModule.pop();
         } else {
-          console.info('[OtherLoginPage] register failed, showing toast')
-          ToastDialog.showToast({ message: '注册失败，请重试' })
+          ToastDialog.showToast({ message: '注册失败，请重试' });
         }
       }).catch((err: Error) => {
-        console.error('[OtherLoginPage] registerUser error:', err.message, JSON.stringify(err))
-        ToastDialog.showToast({ message: '注册异常: ' + (err.message || '未知错误') })
-      })
+        console.error('[OtherLoginPage] registerUser.catch:', err && err.message, JSON.stringify(err));
+        ToastDialog.showToast({ message: '注册异常: ' + (err && err.message || '未知错误') });
+      });
     })
 
     Text('已有账号？登录')
