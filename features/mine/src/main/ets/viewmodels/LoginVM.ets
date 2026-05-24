@@ -121,16 +121,20 @@ export class LoginUtil {
       return
     }
 
-    const res = await AuthApis.register(params)
-    if (res.code === 0 && res.data) {
-      AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
-      AuthCache.setUserId(res.data.user.id)
-      AuthCache.setUserType('full')
-      iData.global.isLogin = true
-      ToastDialog.showToast({ message: '注册成功' })
-      RouterModule.pop()
-    } else {
-      ToastDialog.showToast({ message: res.msg || '注册失败' })
+    try {
+      const res = await AuthApis.register(params)
+      if (res.code === 0 && res.data) {
+        AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
+        AuthCache.setUserId(res.data.user.id)
+        AuthCache.setUserType('full')
+        iData.global.isLogin = true
+        ToastDialog.showToast({ message: '注册成功' })
+        RouterModule.pop()
+      } else {
+        ToastDialog.showToast({ message: res.msg || '注册失败' })
+      }
+    } catch (error) {
+      ToastDialog.showToast({ message: '网络错误，请稍后重试' })
     }
   }
 
