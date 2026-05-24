@@ -44,6 +44,7 @@ export class AggregatedLoginVM {
   domainId: number = 0x0000;
   obtainVerifyCode: (phone: string) => Promise<void> = () => new Promise(() => {
   });
+  registerFn: (username: string, password: string) => Promise<boolean> = () => Promise.resolve(false);
   controller: loginComponentManager.LoginWithHuaweiIDButtonController =
     new loginComponentManager.LoginWithHuaweiIDButtonController()
     // 需要用户同意协议才能完成华为账号登录，请先设置协议状态为NOT_ACCEPTED，当用户同意协议后设置协议状态为ACCEPTED，才可以完成华为账号登录
@@ -81,17 +82,20 @@ export class AggregatedLoginVM {
     this.phoneNum = '';
     this.verifyCode = '';
     this.verifyCodeTime = 0;
+    this.persistenceData.phoneNumber = '';
     clearInterval(this.timer);
   }
 
   setValue(isSheet: boolean, autoSheet: boolean, isPersistence: boolean, apiController: ApiController,
-    uiContext: UIContext, obtainVerifyCode: (phone: string) => Promise<void>) {
+    uiContext: UIContext, obtainVerifyCode: (phone: string) => Promise<void>,
+    registerFn: (username: string, password: string) => Promise<boolean>) {
     this.isSheet = isSheet;
     this.autoSheet = autoSheet;
     this.isPersistence = isPersistence;
     this.apiController = apiController;
     this.uiContext = uiContext;
     this.obtainVerifyCode = obtainVerifyCode;
+    this.registerFn = registerFn;
   }
 
   async wxLogin(extraInfo: ExtraInfo) {
@@ -270,6 +274,7 @@ export class AggregatedLoginVM {
         this.unionID = util.generateRandomUUID();
         this.openID = util.generateRandomUUID();
         this.anonymousPhone = '123****8900';
+        this.authorizationCode = util.generateRandomUUID();
         hilog.error(this.domainId, this.logTag,
           `Failed to execute request. Code is ${error.code}, Message is ${error.message}`);
       });
@@ -366,6 +371,13 @@ export class AggregatedLoginVM {
       hilog.error(this.domainId, this.logTag,
         `Failed to LoginWithHuaweiIDButton, errCode: ${err.code}, errMessage: ${err.message}`);
     }
+  }
+
+  async registerUser(username: string, password: string): Promise<boolean> {
+    if (this.registerFn) {
+      return this.registerFn(username, password);
+    }
+    return false;
   }
 }
 

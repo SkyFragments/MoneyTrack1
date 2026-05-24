@@ -1,9 +1,22 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { initializeDatabase } = require('./db');
+const authMiddleware = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
+const guestRoutes = require('./routes/guest');
 const categoryRoutes = require('./routes/categories');
+const accountRoutes = require('./routes/accounts');
+const transactionRoutes = require('./routes/transactions');
+const assetRoutes = require('./routes/assets');
+const budgetRoutes = require('./routes/budgets');
 const syncRoutes = require('./routes/sync');
+
+// Validate JWT_SECRET on startup
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required but not set');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,16 +24,41 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+// CORS - allow HarmonyOS and web clients
+// NOTE: In production, restrict origin via ALLOWED_ORIGIN env var
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { code: 429, msg: 'Too many requests, please try again later' }
+});
 
-app.use('/api/sync', syncRoutes);
+// Auth routes (public, with rate limiting)
+app.use('/api/auth', authLimiter, authRoutes);
+
+// Guest routes (public, for creating guest accounts)
+app.use('/api/guest', authLimiter, guestRoutes);
+
+// Protected routes (require auth)
+app.use('/api/categories', authMiddleware, categoryRoutes);
+app.use('/api/accounts', authMiddleware, accountRoutes);
+app.use('/api/transactions', authMiddleware, transactionRoutes);
+app.use('/api/assets', authMiddleware, assetRoutes);
+app.use('/api/budgets', authMiddleware, budgetRoutes);
+app.use('/api/sync', authMiddleware, syncRoutes);
 
 // Initialize database and start server
 async function start() {
@@ -30,6 +68,9 @@ async function start() {
   });
 }
 
-start();
+// Only start server when run directly (not when imported for testing)
+if (require.main === module) {
+  start();
+}
 
-module.exports = app;
+module.exports = { app, start };

@@ -6,6 +6,9 @@ const router = express.Router();
 
 // GET /api/sync/pull?since={timestamp}
 router.get('/pull', authMiddleware, async (req, res) => {
+  if (req.userType === 'guest') {
+    return res.status(403).json({ code: 403, msg: 'Guest accounts cannot sync to cloud' });
+  }
   try {
     const since = parseInt(req.query.since, 10) || 0;
     const data = await syncService.pull(req.userId, since);
@@ -17,6 +20,9 @@ router.get('/pull', authMiddleware, async (req, res) => {
 
 // POST /api/sync/push
 router.post('/push', authMiddleware, async (req, res) => {
+  if (req.userType === 'guest') {
+    return res.status(403).json({ code: 403, msg: 'Guest accounts cannot sync to cloud' });
+  }
   try {
     const data = req.body;
     const counts = await syncService.push(req.userId, data);

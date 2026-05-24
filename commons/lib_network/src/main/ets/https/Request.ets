@@ -1,14 +1,8 @@
-import { BusinessError } from '@kit.BasicServicesKit';
-import axios, { AxiosResponse } from '@ohos/axios';
+import axios, { AxiosResponse, InternalAxiosRequestConfig, AxiosError } from '@ohos/axios';
 import { Logger } from 'commonlib';
+import { AuthCache } from 'commonlib';
 
-/**
- * TODO: Replace with actual server IP when deploying
- * For local development: http://localhost:3000
- * For HarmonyOS emulator: http://10.0.2.2:3000
- * For real device: http://YOUR_PC_IP:3000
- */
-const baseURL = 'http://localhost:3000';
+const baseURL = 'http://1.12.234.7:8080';
 
 const instance = axios.create({
   baseURL,
@@ -16,27 +10,17 @@ const instance = axios.create({
   headers: {},
 });
 
-instance.interceptors.response.use(
-  (response: AxiosResponse) => {
-    if (response.status === 200) {
-      return Promise.resolve(response.data);
-    } else {
-      Logger.error(
-        '[Network]',
-        `https request failed：${response.config.url}. error:`,
-        JSON.stringify(response.status),
-      );
-      return Promise.reject(response);
+instance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const token = AuthCache.getAccessToken();
+    if (token && config.headers) {
+      config.headers['Authorization'] = 'Bearer ' + token;
     }
+    return config;
   },
-  (error: BusinessError) => {
-    Logger.error(
-      '[Network]',
-      `https request failed：. error:`,
-      JSON.stringify(error),
-    );
+  (error: AxiosError): Promise<AxiosError> => {
     return Promise.reject(error);
-  },
+  }
 );
 
 export default instance;

@@ -1,7 +1,6 @@
 {
   "app": {
-// todo: 修改包名
-    "bundleName": "jzyy.1.xxxxxx",
+    "bundleName": "com.skyfragments.moneytrack",
     "vendor": "example",
     "versionCode": 1000000,
     "versionName": "1.0.0",

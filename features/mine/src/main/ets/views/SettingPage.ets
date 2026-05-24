@@ -16,8 +16,6 @@ export struct SettingPage {
   @Local
   stack: NavPathStack = RouterModule.getStack()
   @Local
-  isLoggedIn: boolean = iData.global.isLogin
-  @Local
   group1: SettingGroup = new SettingGroup()
     .setList([
       new SettingItem()
@@ -83,7 +81,7 @@ export struct SettingPage {
           settingList: [this.group1, this.group2, this.group3, this.group4],
         })
           .layoutWeight(1)
-        if (this.isLoggedIn) {
+        if (iData.global.isLogin) {
           Row() {
             Button('退出登录')
               .width('100%')
@@ -99,7 +97,6 @@ export struct SettingPage {
                     UIDialog.closeLast();
                     AuthCache.clear();
                     iData.global.isLogin = false;
-                    this.isLoggedIn = false;
                     ToastDialog.showToast({ message: '已退出登录' });
                     RouterModule.pop();
                   }

@@ -31,43 +31,105 @@ function generateTokens(userId) {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ code: 400, msg: 'Email and password are required' });
+    if (!username || !password) {
+      return res.status(400).json({ code: 400, msg: 'Username and password are required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ code: 400, msg: 'Invalid email format' });
+    if (typeof username !== 'string' || username.length < 3 || username.length > 30) {
+      return res.status(400).json({ code: 400, msg: 'Username must be 3-30 characters' });
     }
 
-    // Validate password strength: min 6 chars
     if (typeof password !== 'string' || password.length < 6) {
       return res.status(400).json({ code: 400, msg: 'Password must be at least 6 characters' });
     }
 
-    const user = await userService.createUser(email, password);
+    const user = await userService.createUser(username, password);
     const { accessToken, refreshToken } = generateTokens(user.id);
 
     res.json({ code: 0, data: { user, accessToken, refreshToken } });
   } catch (err) {
+    if (err.message.includes('UNIQUE')) {
+      return res.status(400).json({ code: 400, msg: 'Username already exists' });
+    }
     res.status(400).json({ code: 400, msg: err.message });
   }
 });
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  const user = await userService.validateUser(email, password);
+  if (!username || !password) {
+    return res.status(400).json({ code: 400, msg: 'Username and password are required' });
+  }
+
+  const user = await userService.validateUser(username, password);
   if (!user) {
     return res.status(401).json({ code: 401, msg: 'Invalid credentials' });
   }
 
   const { accessToken, refreshToken } = generateTokens(user.id);
 
+  res.json({ code: 0, data: { user, accessToken, refreshToken } });
+});
+
+// POST /api/auth/phone-login/send — send verification code
+router.post('/phone-login/send', async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.length !== 11) {
+    return res.status(400).json({ code: 400, msg: 'Invalid phone number' });
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const db = await getDb();
+  // DELETE first to avoid resurrecting soft-deleted rows, then INSERT fresh
+  const delStmt = db.prepare('DELETE FROM verify_codes WHERE phone = ?');
+  delStmt.run([phoneNumber]);
+  delStmt.free();
+  const stmt = db.prepare(
+    'INSERT INTO verify_codes (phone, code, expiresAt, deleted) VALUES (?, ?, datetime("now", "+5 minutes"), 0)'
+  );
+  stmt.run([phoneNumber, code]);
+  stmt.free();
+  await saveDbAsync();
+
+  console.log(`[DEV] SMS code for ${phoneNumber}: ${code}`);
+  res.json({ code: 0, data: { message: 'Verification code sent' } });
+});
+
+// POST /api/auth/phone-login — verify code and login
+router.post('/phone-login', async (req, res) => {
+  const { phoneNumber, code } = req.body;
+
+  if (!phoneNumber || !code) {
+    return res.status(400).json({ code: 400, msg: 'Phone number and code are required' });
+  }
+
+  const db = await getDb();
+  const stmt = db.prepare('SELECT * FROM verify_codes WHERE phone = ? AND code = ? AND expiresAt > datetime("now") AND deleted = 0');
+  stmt.bind([phoneNumber, code]);
+  stmt.step();
+  const record = stmt.getAsObject();
+  stmt.free();
+
+  if (!record || !record.phone) {
+    return res.status(401).json({ code: 401, msg: 'Invalid or expired verification code' });
+  }
+
+  const delStmt = db.prepare('UPDATE verify_codes SET deleted = 1 WHERE id = ?');
+  delStmt.run([record.id]);
+  delStmt.free();
+  await saveDbAsync();
+
+  let user = await userService.findByPhone(phoneNumber);
+  if (!user) {
+    user = await userService.createUserFromPhone(phoneNumber);
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user.id);
   res.json({ code: 0, data: { user, accessToken, refreshToken } });
 });
 
@@ -126,6 +188,38 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 
   res.json({ code: 0, data: user });
+});
+
+// POST /api/auth/upgrade
+router.post('/upgrade', authMiddleware, async (req, res) => {
+  const { username, password } = req.body;
+
+  if (req.userType !== 'guest') {
+    return res.status(400).json({ code: 400, msg: 'User is not a guest' });
+  }
+
+  if (!username || !password) {
+    return res.status(400).json({ code: 400, msg: 'Username and password are required' });
+  }
+
+  if (typeof username !== 'string' || username.length < 3 || username.length > 30) {
+    return res.status(400).json({ code: 400, msg: 'Username must be 3-30 characters' });
+  }
+
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ code: 400, msg: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    const user = await userService.upgradeGuestUser(req.userId, username, password);
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    res.json({ code: 0, data: { user, accessToken, refreshToken } });
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) {
+      return res.status(400).json({ code: 400, msg: 'Username already exists' });
+    }
+    res.status(400).json({ code: 400, msg: err.message });
+  }
 });
 
 module.exports = router;

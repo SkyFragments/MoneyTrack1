@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "C:/Users/SkyFragments/moneytrack.p12",
+          "storePassword": "0000001D0E2E0E3E34B069900C05DC0BDDEDD07258F9579C0E44D10CCCB3C90FB490DE17183E13DEC1A3E78C76",
+          "keyAlias": "moneytrack",
+          "keyPassword": "0000001D238696AF9AFE167AED106A67921C788760C9D3AD3BBAB9DB3F9569F44B198EE3D2C836A7A34007C21F",
+          "signAlg": "SHA256withECDSA",
+          "profile": "D:/Download/moneytrackDebug.p7b",
+          "certpath": "D:/Download/moneytrack.cer"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
@@ -22,6 +36,25 @@
       },
       {
         "name": "release"
+      }
+    ],
+    "capabilities": [
+      {
+        "bundleName": "com.skyfragments.moneytrack",
+        "config": [
+          {
+            "name": "Push Kit",
+            "capability": "com.huawei.service.push.base_service"
+          },
+          {
+            "name": "Device status detection",
+            "capability": "com.huawei.service.device_security.device_verify"
+          },
+          {
+            "name": "Safety Detect",
+            "capability": "com.huawei.service.device_security.safety_detect"
+          }
+        ]
       }
     ]
   },

@@ -7,5 +7,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@tencent/wechat_open_sdk": "1.0.14",
+    "commonlib": "file:../../commons/commonlib",
+    "lib_network": "file:../../commons/lib_network"
   }
 }

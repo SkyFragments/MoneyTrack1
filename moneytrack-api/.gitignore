@@ -1,0 +1,24 @@
+# Environment variables (NEVER commit)
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Database (local test DB)
+*.db
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PM2
+.pm2/

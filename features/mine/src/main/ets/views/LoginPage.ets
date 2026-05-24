@@ -53,6 +53,7 @@ struct LoginPage {
           handleLoginFail: LoginUtil.handleLoginFail,
           obtainVerifyCode: LoginUtil.obtainVerifyCode,
           loginController: LoginUtil.controller,
+          registerUser: LoginUtil.registerUser,
         });
       }
     }
