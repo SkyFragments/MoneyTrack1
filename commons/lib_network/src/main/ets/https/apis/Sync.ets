@@ -32,7 +32,7 @@ class SyncApis {
   public pull(params?: object): Promise<BaseResponse<SyncPullResult>> {
     if (AuthCache.getUserType() === 'guest') {
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync pull');
-      return Promise.resolve({ code: 0, data: { accounts: [], transactions: [], assets: [], budgets: [], categories: [], serverTime: '' } } as BaseResponse<SyncPullResult>);
+      return Promise.resolve({ code: 0, data: { accounts: [], transactions: [], assets: [], budgets: [], categories: [], serverTime: 0 } } as BaseResponse<SyncPullResult>);
     }
     return request.get(RequestUrlMap.SYNC_PULL, { params })
   }
