@@ -76,12 +76,12 @@ export class MineVM {
           await AccountingDB.addTransaction({
             accountId: tx.accountId,
             type: tx.type as BalanceChangeType,
-            resource: (tx.resource ?? '').toString(),
+            resource: Number(tx.resource) || 0,
             amount: Number(tx.amount) || 0,
             date: (tx.date ?? new Date().toISOString()).toString(),
             note: (tx.note ?? '').toString(),
             excluded: Boolean(tx.excluded),
-            assetId: (tx.assetId ?? '').toString(),
+            assetId: tx.assetId ?? 0,
           });
         }
         for (const asset of (data.assets || [])) {
