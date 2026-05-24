@@ -32,7 +32,30 @@ export class LoginUtil {
   static controller: LoginController = new LoginController()
 
   static async huaweiLogin(loginParams: LoginParams): Promise<void> {
-    return LoginUtil.handleLoginEvent('华为一键登录成功', loginParams)
+    // Huawei login: use openId from loginParams to call huaweiLogin API directly.
+    // handleLoginEvent splits on unionID falsiness — retry path has empty unionID → wrong branch.
+    const openId = loginParams?.unionID ?? '';
+    try {
+      const huaweiRes = await AuthApis.huaweiLogin({ openId });
+      if (huaweiRes.code === 0 && huaweiRes.data) {
+        const loginData = huaweiRes.data;
+        AuthCache.setTokens(loginData.accessToken, loginData.refreshToken);
+        if (loginData.user?.id) {
+          AuthCache.setUserId(loginData.user.id);
+        }
+        iData.global.isLogin = true;
+        ToastDialog.showToast({ message: '华为一键登录成功' });
+        const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
+        if (memberList.nonRenewList.length) {
+          iData.global.userInfo.isMember = true;
+        }
+        RouterModule.pop();
+      } else {
+        ToastDialog.showToast({ message: huaweiRes.msg || '登录失败' });
+      }
+    } catch (_error) {
+      ToastDialog.showToast({ message: '网络错误，请稍后重试' });
+    }
   }
 
   static async wxLogin(): Promise<void> {
@@ -52,7 +75,7 @@ export class LoginUtil {
       onConfirm: async () => {
         UIDialog.closeLast();
         LoginUtil.controller.clearLoginInfo();
-        await LoginUtil.handleLoginEvent('验证码登录成功', loginParams, true)
+        return LoginUtil.handleLoginEvent('验证码登录成功', loginParams, true)
       }
     })
   }

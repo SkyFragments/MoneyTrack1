@@ -85,8 +85,12 @@ router.post('/phone-login/send', async (req, res) => {
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const db = await getDb();
+  // DELETE first to avoid resurrecting soft-deleted rows, then INSERT fresh
+  const delStmt = db.prepare('DELETE FROM verify_codes WHERE phone = ?');
+  delStmt.run([phoneNumber]);
+  delStmt.free();
   const stmt = db.prepare(
-    'INSERT OR REPLACE INTO verify_codes (phone, code, expiresAt, deleted) VALUES (?, ?, datetime("now", "+5 minutes"), 0)'
+    'INSERT INTO verify_codes (phone, code, expiresAt, deleted) VALUES (?, ?, datetime("now", "+5 minutes"), 0)'
   );
   stmt.run([phoneNumber, code]);
   stmt.free();
