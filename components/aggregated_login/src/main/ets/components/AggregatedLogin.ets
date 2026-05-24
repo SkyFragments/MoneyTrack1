@@ -34,6 +34,7 @@ export struct AggregatedLogin {
     () => {}
   @Event obtainVerifyCode: (phone: string) => Promise<void> = () => new Promise(() => {
   });
+  @Event registerUser: (username: string, password: string) => Promise<boolean> = () => Promise.resolve(false);
 
   aboutToAppear(): void {
     this.vm.themeColor = this.themeColor;
@@ -43,7 +44,7 @@ export struct AggregatedLogin {
         this.handleLoginFail(loginChannelType, error)
       }
     this.vm.setValue(this.isSheet, this.autoSheet, this.isPersistence, this.apiController, this.getUIContext(),
-      this.obtainVerifyCode)
+      this.obtainVerifyCode, this.registerUser)
     this.loginController.clearLoginInfo = () => {
       this.vm.resetInstance()
     }

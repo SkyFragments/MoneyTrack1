@@ -34,7 +34,7 @@ interface LoginParams {
   password: string;
 }
 
-interface RegisterParams {
+export interface RegisterParams {
   username: string;
   password: string;
 }
@@ -57,7 +57,7 @@ interface PhoneSendParams {
   phoneNumber: string;
 }
 
-interface UpgradeParams {
+export interface UpgradeParams {
   username: string;
   password: string;
 }

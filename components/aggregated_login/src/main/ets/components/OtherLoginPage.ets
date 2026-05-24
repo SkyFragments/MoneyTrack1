@@ -1,10 +1,13 @@
-import { Channel, NavParam, RegisterParams } from '../model/Index';
+import { Channel, NavParam } from '../model/Index';
 import { Constants, LoginType } from '../common/Constant';
 import { AggregatedLoginVM } from '../viewmodel/AggregatedLoginVM';
 import { AgreePrivacyBox } from './AgreePrivacyBox';
 import { LoginSheetUtils } from '../utils/LoginSheetUtils';
-import { LoginUtil } from 'commonlib';
-import type { RegisterParams as AuthRegisterParams } from 'lib_network';
+
+interface RegisterParams {
+  username: string;
+  password: string;
+}
 
 @Builder
 function OtherLoginPageBuilder() {
@@ -320,7 +323,20 @@ export struct OtherLoginPage {
         username: this.registerUsername,
         password: this.registerPassword
       }
-      LoginUtil.handleRegister(params, this.registerConfirmPassword)
+      if (this.registerPassword !== this.registerConfirmPassword) {
+        return
+      }
+      if (this.registerUsername.length < 3 || this.registerUsername.length > 30) {
+        return
+      }
+      if (this.registerPassword.length < 6) {
+        return
+      }
+      this.vm.registerUser(params.username, params.password).then((success) => {
+        if (success) {
+          this.routerModule.pop()
+        }
+      })
     })
 
     Text('已有账号？登录')

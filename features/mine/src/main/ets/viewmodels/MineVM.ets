@@ -1,10 +1,11 @@
 import { SettingGroup, SettingItem, SettingType } from 'app_setting';
 import { AccountingDB, BillInfo, AccountTableBasis, TransactionTableBasis, AssetTableBasis } from 'bill_data_processing';
-import { RouterMap, RouterModule } from 'commonlib';
+import { iData, RouterMap, RouterModule } from 'commonlib';
 import { ServiceMenuItem } from '../common/Types';
 import { SyncApis } from 'lib_network';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
 import { BalanceChangeType } from 'bill_base';
+import { LoginUtil } from '../viewmodels/LoginVM';
 
 interface SyncPullData {
   accounts: AccountTableBasis[];
@@ -48,6 +49,14 @@ export class MineVM {
   }
 
   async doSync() {
+    if (LoginUtil.checkGuestMode()) {
+      ToastDialog.showToast({ message: '请先登录后再进行云同步' });
+      return;
+    }
+    if (!iData.global.isLogin) {
+      ToastDialog.showToast({ message: '请先登录后再进行云同步' });
+      return;
+    }
     try {
       ToastDialog.showToast({ message: '正在同步...' });
       const res = await SyncApis.pull();

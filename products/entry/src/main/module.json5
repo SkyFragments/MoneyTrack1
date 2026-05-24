@@ -12,12 +12,12 @@
     "installationFree": false,
     "pages": "$profile:main_pages",
     "metadata": [
-
       {
         "name": "client_id",
-        "value": "1953023905824259712"
+        "value": "6917605851596420598"
       }
     ],
+    "requestPermissions": [],
     "querySchemes": [
       "weixin",
       "wxopensdk",

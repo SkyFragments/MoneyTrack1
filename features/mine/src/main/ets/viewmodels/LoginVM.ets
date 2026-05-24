@@ -3,9 +3,10 @@ import { common } from '@kit.AbilityKit';
 import * as wxopensdk from '@tencent/wechat_open_sdk';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
-import { LoginController, LoginParams, LoginChannelType, RegisterParams } from 'aggregated_login';
+import { LoginController, LoginParams, LoginChannelType } from 'aggregated_login';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
 import { AuthApis } from 'lib_network';
+import type { RegisterParams, UpgradeParams } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -175,6 +176,15 @@ export class LoginUtil {
     }
   }
 
+  static async registerUser(username: string, password: string): Promise<boolean> {
+    try {
+      const res = await AuthApis.register({ username, password })
+      return res.code === 0 && res.data != null
+    } catch (_err) {
+      return false
+    }
+  }
+
   static async handleRegister(params: RegisterParams, registerConfirmPassword: string): Promise<void> {
     if (params.password !== registerConfirmPassword) {
       ToastDialog.showToast({ message: '两次密码不一致' })
@@ -224,7 +234,7 @@ export class LoginUtil {
     }
 
     try {
-      const res = await AuthApis.upgrade(params)
+      const res = await AuthApis.upgrade(params as UpgradeParams)
       if (res.code === 0 && res.data) {
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
         AuthCache.setUserId(res.data.user?.id ?? '')
@@ -240,4 +250,5 @@ export class LoginUtil {
       ToastDialog.showToast({ message: '网络错误，请稍后重试' })
       return false
     }
+  }
 }
