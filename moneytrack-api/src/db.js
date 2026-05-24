@@ -110,6 +110,7 @@ async function initializeDatabase() {
       userId TEXT NOT NULL,
       name TEXT DEFAULT '',
       type TEXT DEFAULT 'default',
+      balance REAL DEFAULT 0,
       date TEXT DEFAULT '01',
       accountIncome REAL DEFAULT 0,
       accountExpense REAL DEFAULT 0,
