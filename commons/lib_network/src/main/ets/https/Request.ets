@@ -13,25 +13,35 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const token = AuthCache.getAccessToken();
+    console.info('[Request] fullUrl=' + (config.baseURL || '') + (config.url || ''));
+    console.info('[Request] method=' + config.method + ' timeout=' + config.timeout + ' data=' + JSON.stringify(config.data));
+    console.info('[Request] headers=' + JSON.stringify(config.headers));
     if (token && config.headers) {
       config.headers['Authorization'] = 'Bearer ' + token;
+      console.info('[Request] token applied, auth header present');
+    } else {
+      console.info('[Request] no token, skipping auth header');
     }
-    console.info('[Request] URL=' + config.baseURL + config.url, 'method=' + config.method, 'data=' + JSON.stringify(config.data));
     return config;
   },
   (error: AxiosError): Promise<AxiosError> => {
-    console.error('[Request] request error:', error.message, 'url=', error.config?.baseURL || '', error.config?.url || '');
+    console.error('[Request] request interceptor ERROR:', error.message);
+    console.error('[Request] error config:', error.config ? JSON.stringify({url: error.config.url, baseURL: error.config.baseURL, method: error.config.method}) : 'null');
     return Promise.reject(error);
   }
 );
 
 instance.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.info('[Request] response:', response.status, response.config.url, JSON.stringify(response.data));
+    console.info('[Request] response OK:', response.status, 'url=' + (response.config.baseURL || '') + (response.config.url || ''));
+    console.info('[Request] response data:', JSON.stringify(response.data).substring(0, 200));
     return response;
   },
   (error: AxiosError) => {
-    console.error('[Request] response error:', error.response?.status, error.message, 'url=', error.config?.baseURL || '', error.config?.url || '');
+    console.error('[Request] response ERROR:', error.message);
+    console.error('[Request] response status:', error.response?.status);
+    console.error('[Request] response data:', JSON.stringify(error.response?.data || 'none').substring(0, 200));
+    console.error('[Request] error config:', error.config ? JSON.stringify({url: error.config.url, baseURL: error.config.baseURL, method: error.config.method}) : 'null');
     return Promise.reject(error);
   }
 );
