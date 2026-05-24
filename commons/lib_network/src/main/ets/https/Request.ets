@@ -2,7 +2,7 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig, AxiosError } from '@o
 import { Logger } from 'commonlib';
 import { AuthCache } from 'commonlib';
 
-const baseURL = 'http://192.168.1.3:8080';
+const baseURL = 'http://1.12.234.7:8080';
 
 const instance = axios.create({
   baseURL,
