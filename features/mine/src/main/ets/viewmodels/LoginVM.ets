@@ -43,7 +43,7 @@ export class LoginUtil {
   static async verifyCodeLogin(loginParams: LoginParams): Promise<void> {
     UIDialog.open({
       contentOptions: {
-        content: '模拟验证码登录成功？',
+        content: '验证码登录成功？',
         contentTextAlign: TextAlign.Center
       },
       showConfirmButton: true,
@@ -135,7 +135,7 @@ export class LoginUtil {
       const errorMsg = ERROR_MSG_MAP[businessError.code] ?? '未知错误。';
       UIDialog.open({
         contentOptions: {
-          content: errorMsg + '是否先模拟登录成功？',
+          content: errorMsg + '是否继续？',
           contentTextAlign: TextAlign.Center
         },
         showConfirmButton: true,
@@ -197,19 +197,20 @@ export class LoginUtil {
       return false
     }
 
-    const res = await AuthApis.upgrade(params)
-    if (res.code === 0 && res.data) {
-      AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
-      AuthCache.setUserId(res.data.user?.id ?? '')
-      AuthCache.setUserType('full')
-      iData.global.isLogin = true
-      ToastDialog.showToast({ message: '升级成功' })
-      return true
-    } else {
-      ToastDialog.showToast({ message: res.msg || '升级失败' })
-      return false
-    }
-  } catch (error) {
+    try {
+      const res = await AuthApis.upgrade(params)
+      if (res.code === 0 && res.data) {
+        AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
+        AuthCache.setUserId(res.data.user?.id ?? '')
+        AuthCache.setUserType('full')
+        iData.global.isLogin = true
+        ToastDialog.showToast({ message: '升级成功' })
+        return true
+      } else {
+        ToastDialog.showToast({ message: res.msg || '升级失败' })
+        return false
+      }
+    } catch (error) {
     ToastDialog.showToast({ message: '网络错误，请稍后重试' })
     return false
   }
