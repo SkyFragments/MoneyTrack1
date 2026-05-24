@@ -324,12 +324,15 @@ export struct OtherLoginPage {
         password: this.registerPassword
       }
       if (this.registerPassword !== this.registerConfirmPassword) {
+        ToastDialog.showToast({ message: '两次密码不一致' })
         return
       }
       if (this.registerUsername.length < 3 || this.registerUsername.length > 30) {
+        ToastDialog.showToast({ message: '用户名需3-30字符' })
         return
       }
       if (this.registerPassword.length < 6) {
+        ToastDialog.showToast({ message: '密码至少6字符' })
         return
       }
       this.vm.registerUser(params.username, params.password).then((success) => {

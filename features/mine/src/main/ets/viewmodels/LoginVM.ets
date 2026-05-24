@@ -179,7 +179,14 @@ export class LoginUtil {
   static async registerUser(username: string, password: string): Promise<boolean> {
     try {
       const res = await AuthApis.register({ username, password })
-      return res.code === 0 && res.data != null
+      if (res.code === 0 && res.data) {
+        AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
+        AuthCache.setUserId(res.data.user?.id ?? '')
+        AuthCache.setUserType('full')
+        iData.global.isLogin = true
+        return true
+      }
+      return false
     } catch (_err) {
       return false
     }
@@ -202,6 +209,7 @@ export class LoginUtil {
     try {
       const res = await AuthApis.register(params)
       if (res.code === 0 && res.data) {
+        AuthCache.clear();
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
@@ -236,6 +244,7 @@ export class LoginUtil {
     try {
       const res = await AuthApis.upgrade(params as UpgradeParams)
       if (res.code === 0 && res.data) {
+        AuthCache.clear();
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')

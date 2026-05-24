@@ -11,6 +11,7 @@ import { LoginSheetUtils } from '../utils/LoginSheetUtils';
 import { ApiController, LoginEventDispatcher } from '../utils/Utils';
 import { OnWXResp, wxEventHandler } from '../utils/WXApiUtils';
 import { WXLoginService } from '../utils/WXLoginService';
+import { AuthCache, iData } from 'commonlib';
 
 @ObservedV2
 export class AggregatedLoginVM {
@@ -73,6 +74,8 @@ export class AggregatedLoginVM {
   }
 
   public static clearInstance() {
+    AuthCache.clear();
+    iData.global.isLogin = false;
     AggregatedLoginVM._instance = null;
   }
 
@@ -84,6 +87,7 @@ export class AggregatedLoginVM {
     this.verifyCodeTime = 0;
     this.persistenceData.phoneNumber = '';
     clearInterval(this.timer);
+    iData.global.isLogin = false;
   }
 
   setValue(isSheet: boolean, autoSheet: boolean, isPersistence: boolean, apiController: ApiController,
