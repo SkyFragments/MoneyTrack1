@@ -226,12 +226,7 @@ export struct MineView {
     .padding(16)
   }
 
-  aboutToDisappear(): void {
-    if (this.showUpgradeDialog) {
-      UIDialog.closeLast()
-    }
   }
-}
 
 @Extend(Image)
 function commonIconStyle() {

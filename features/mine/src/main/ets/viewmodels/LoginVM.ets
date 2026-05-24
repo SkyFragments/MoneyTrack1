@@ -140,7 +140,7 @@ export class LoginUtil {
     return userType === 'guest';
   }
 
-  static async handleUpgrade(params: { username: string; password: string }): Promise<boolean> {
+  static async handleUpgrade(params: RegisterParams): Promise<boolean> {
     // Validate
     if (!params.username || params.username.length < 3 || params.username.length > 30) {
       ToastDialog.showToast({ message: '用户名需3-30字符' })

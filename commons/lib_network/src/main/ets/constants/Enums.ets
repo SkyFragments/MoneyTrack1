@@ -10,6 +10,7 @@ export enum RequestUrlMap {
   AUTH_REGISTER = 'auth/register',
   AUTH_REFRESH = 'auth/refresh',
   AUTH_HUAWEI_LOGIN = 'auth/huawei-login',
+  AUTH_UPGRADE = 'auth/upgrade',
   /**
    * 用户相关
    */
@@ -17,7 +18,6 @@ export enum RequestUrlMap {
   USER_LOGOUT = 'user/logout',
   USER_INFO = 'user/info',
   USER_MEMBERSHIP = 'user/membership',
-  AUTH_UPGRADE = 'auth/upgrade'
 }
 
 export enum UserInfoType {
