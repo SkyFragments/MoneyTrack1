@@ -70,15 +70,18 @@ export class MineVM {
           }
         }
         for (const tx of (data.transactions || [])) {
+          if (tx.accountId == null || tx.type == null) {
+            continue; // skip malformed records
+          }
           await AccountingDB.addTransaction({
             accountId: tx.accountId,
             type: tx.type as BalanceChangeType,
-            resource: tx.resource,
-            amount: tx.amount,
-            date: tx.date,
-            note: tx.note,
-            excluded: tx.excluded,
-            assetId: tx.assetId,
+            resource: tx.resource ?? '',
+            amount: tx.amount ?? 0,
+            date: tx.date ?? new Date().toISOString(),
+            note: tx.note ?? '',
+            excluded: tx.excluded ?? false,
+            assetId: tx.assetId ?? '',
           });
         }
         for (const asset of (data.assets || [])) {
