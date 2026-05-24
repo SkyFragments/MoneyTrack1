@@ -28,8 +28,11 @@ export struct OtherLoginPage {
 
   aboutToAppear(): void {
     this.vm.registerOnWXRespCallback();
-    this.registerMode = this.pageParam.registerMode;
-    this.usernameLoginMode = this.pageParam.usernameLoginMode;
+    const para = this.routerModule.getParamByName('OtherLoginPage')[0] as NavParam;
+    if (para) {
+      this.registerMode = para.registerMode;
+      this.usernameLoginMode = para.usernameLoginMode;
+    }
   }
 
   aboutToDisappear(): void {
