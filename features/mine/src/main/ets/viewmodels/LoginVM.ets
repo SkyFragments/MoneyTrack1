@@ -38,6 +38,7 @@ export class LoginUtil {
   static async wxLogin(): Promise<void> {
     // TODO: implement WeChat login — currently shows placeholder
     ToastDialog.showToast({ message: '微信登录开发中' })
+    return Promise.resolve()
   }
 
   static async verifyCodeLogin(loginParams: LoginParams): Promise<void> {
@@ -51,7 +52,7 @@ export class LoginUtil {
       onConfirm: async () => {
         UIDialog.closeLast();
         LoginUtil.controller.clearLoginInfo();
-        LoginUtil.handleLoginEvent('验证码登录成功', loginParams, true)
+        await LoginUtil.handleLoginEvent('验证码登录成功', loginParams, true)
       }
     })
   }
@@ -143,9 +144,11 @@ export class LoginUtil {
         onConfirm: async () => {
           UIDialog.closeLast();
           LoginUtil.controller.clearLoginInfo();
-          LoginUtil.handleLoginEvent('华为一键登录成功')
+          LoginUtil.huaweiLogin({} as LoginParams)
         },
       })
+    } else if (loginChannelType === LoginChannelType.WECHAT) {
+      ToastDialog.showToast({ message: '微信登录失败，请稍后重试' })
     }
   }
 
@@ -210,8 +213,8 @@ export class LoginUtil {
         ToastDialog.showToast({ message: res.msg || '升级失败' })
         return false
       }
-    } catch (error) {
-    ToastDialog.showToast({ message: '网络错误，请稍后重试' })
-    return false
-  }
+    } catch (_error) {
+      ToastDialog.showToast({ message: '网络错误，请稍后重试' })
+      return false
+    }
 }

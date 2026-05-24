@@ -96,7 +96,7 @@ async function initializeDatabase() {
   database.run(`
     CREATE TABLE IF NOT EXISTS verify_codes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      phone TEXT NOT NULL,
+      phone TEXT NOT NULL UNIQUE,
       code TEXT NOT NULL,
       expiresAt TEXT NOT NULL,
       deleted INTEGER DEFAULT 0

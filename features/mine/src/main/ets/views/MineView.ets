@@ -18,6 +18,12 @@ export struct MineView {
     this.vm.loadBillInfo();
   }
 
+  aboutToDisappear(): void {
+    if (this.showUpgradeDialog) {
+      UIDialog.closeLast()
+    }
+  }
+
   build() {
     Column() {
       CommonHeader({ title: '我的' });
