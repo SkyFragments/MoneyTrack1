@@ -14,7 +14,7 @@ interface SyncPullResult {
   assets: object[];
   budgets: object[];
   categories: object[];
-  serverTime: number;
+  serverTime: number | string;
 }
 
 class SyncApis {

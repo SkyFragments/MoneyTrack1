@@ -57,7 +57,7 @@ class AuthApis {
     return request.post(RequestUrlMap.AUTH_LOGIN, params)
   }
 
-  public register(params: RegisterParams): Promise<BaseResponse> {
+  public register(params: RegisterParams): Promise<BaseResponse<LoginResponseData>> {
     return request.post(RequestUrlMap.AUTH_REGISTER, params)
   }
 
