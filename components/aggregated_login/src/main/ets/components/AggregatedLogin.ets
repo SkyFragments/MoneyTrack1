@@ -142,6 +142,57 @@ export struct AggregatedLogin {
                 icon: this.icon,
                 loginTypes: this.loginTypes,
                 isPersistence: this.isPersistence,
+                registerMode: false,
+              });
+            })
+
+          Button('用户名密码登录')
+            .width(Constants.FULL_PERCENT)
+            .height(Constants.BTN_HEIGHT)
+            .constraintSize({ maxWidth: Constants.MAX_WIDTH })
+            .fontSize($r('sys.float.Body_L'))
+            .fontColor($r('sys.color.font_primary'))
+            .fontWeight(FontWeight.Medium)
+            .backgroundColor($r('sys.color.comp_background_tertiary'))
+            .margin({
+              top: Constants.PADDING_M,
+            })
+            .onClick(() => {
+              this.vm.resetParam()
+              this.vm.phoneLogin(this.routerModule, {
+                privacyContent: this.privacyContent,
+                themeColor: this.themeColor,
+                isSheet: this.isSheet,
+                icon: this.icon,
+                loginTypes: this.loginTypes,
+                isPersistence: this.isPersistence,
+                usernameLoginMode: true,
+                registerMode: false,
+              });
+            })
+
+          Button('注册账号')
+            .width(Constants.FULL_PERCENT)
+            .height(Constants.BTN_HEIGHT)
+            .constraintSize({ maxWidth: Constants.MAX_WIDTH })
+            .fontSize($r('sys.float.Body_L'))
+            .fontColor(this.themeColor)
+            .fontWeight(FontWeight.Medium)
+            .backgroundColor($r('sys.color.comp_background_tertiary'))
+            .margin({
+              top: Constants.PADDING_M,
+            })
+            .onClick(() => {
+              this.vm.resetParam()
+              this.vm.phoneLogin(this.routerModule, {
+                privacyContent: this.privacyContent,
+                themeColor: this.themeColor,
+                isSheet: this.isSheet,
+                icon: this.icon,
+                loginTypes: this.loginTypes,
+                isPersistence: this.isPersistence,
+                registerMode: true,
+                usernameLoginMode: false,
               });
             })
 

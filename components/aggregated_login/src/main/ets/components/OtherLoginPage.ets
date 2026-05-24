@@ -21,12 +21,15 @@ export struct OtherLoginPage {
   @Local routerModule: NavPathStack = new NavPathStack();
   pageParam: NavParam = new NavParam();
   @Local registerMode: boolean = false;
+  @Local usernameLoginMode: boolean = false;
   @Local registerUsername: string = '';
   @Local registerPassword: string = '';
   @Local registerConfirmPassword: string = '';
 
   aboutToAppear(): void {
     this.vm.registerOnWXRespCallback();
+    this.registerMode = this.pageParam.registerMode;
+    this.usernameLoginMode = this.pageParam.usernameLoginMode;
   }
 
   aboutToDisappear(): void {
@@ -56,6 +59,8 @@ export struct OtherLoginPage {
 
           if (this.registerMode) {
             this.registerForm()
+          } else if (this.usernameLoginMode) {
+            this.usernameLoginForm()
           } else {
             this.phoneLoginForm()
           }
@@ -243,6 +248,95 @@ export struct OtherLoginPage {
       .margin({ top: Constants.PADDING_M })
       .onClick(() => {
         this.registerMode = true
+        this.usernameLoginMode = false
+      })
+  }
+
+  @Builder
+  usernameLoginForm() {
+    TextInput({ placeholder: '用户名', text: $$this.registerUsername })
+      .width(Constants.FULL_PERCENT)
+      .height(Constants.INPUT_HEIGHT)
+      .caretColor(this.pageParam.themeColor)
+      .constraintSize({ maxWidth: Constants.MAX_WIDTH })
+      .fontSize($r('sys.float.Body_L'))
+      .fontColor($r('sys.color.font_primary'))
+      .borderRadius($r('app.float.radius_20'))
+      .backgroundColor($r('sys.color.background_primary'))
+      .placeholderColor($r('sys.color.font_secondary'))
+      .placeholderFont({ size: $r('sys.float.Body_L') })
+      .margin({ top: Constants.CONTENT_MARGIN_TOP })
+      .padding({
+        top: Constants.PADDING_INPUT,
+        bottom: Constants.PADDING_INPUT,
+        left: Constants.PADDING_L,
+        right: Constants.PADDING_L
+      })
+
+    TextInput({ placeholder: '密码', text: $$this.registerPassword })
+      .width(Constants.FULL_PERCENT)
+      .height(Constants.INPUT_HEIGHT)
+      .caretColor(this.pageParam.themeColor)
+      .constraintSize({ maxWidth: Constants.MAX_WIDTH })
+      .fontSize($r('sys.float.Body_L'))
+      .fontColor($r('sys.color.font_primary'))
+      .borderRadius($r('app.float.radius_20'))
+      .backgroundColor($r('sys.color.background_primary'))
+      .placeholderColor($r('sys.color.font_secondary'))
+      .placeholderFont({ size: $r('sys.float.Body_L') })
+      .type(InputType.Password)
+      .margin({ top: Constants.PADDING_M })
+      .padding({
+        top: Constants.PADDING_INPUT,
+        bottom: Constants.PADDING_INPUT,
+        left: Constants.PADDING_L,
+        right: Constants.PADDING_L
+      })
+
+    Button() {
+      Row({ space: Constants.SPACE_S }) {
+        LoadingProgress()
+          .width(Constants.BACK_WIDTH)
+          .aspectRatio(1)
+          .color($r('sys.color.icon_on_primary'))
+          .visibility(this.vm.isLoading ? Visibility.Visible : Visibility.None)
+        Text('登录')
+          .fontSize($r('sys.float.Body_L'))
+          .fontColor($r('sys.color.font_on_primary'))
+          .fontWeight(FontWeight.Medium)
+      }
+    }
+    .width(Constants.FULL_PERCENT)
+    .height(Constants.BTN_HEIGHT)
+    .constraintSize({ maxWidth: Constants.MAX_WIDTH })
+    .backgroundColor(this.pageParam.themeColor)
+    .fontColor($r('sys.color.font_on_primary'))
+    .margin({ top: Constants.LOGIN_MARGIN_TOP })
+    .enabled(!this.vm.isLoading)
+    .onClick(() => {
+      if (this.registerUsername.length < 3) {
+        ToastDialog.showToast({ message: '用户名至少3字符' })
+        return
+      }
+      if (this.registerPassword.length < 6) {
+        ToastDialog.showToast({ message: '密码至少6字符' })
+        return
+      }
+      this.vm.usernameLogin(this.registerUsername, this.registerPassword).then((success) => {
+        if (success) {
+          this.routerModule.pop()
+        }
+      })
+    })
+
+    Text('还没有账号？去注册')
+      .height(Constants.TEXT_HEIGHT)
+      .fontSize($r('app.float.fontsize_12'))
+      .fontColor($r('sys.color.warning'))
+      .margin({ top: Constants.PADDING_M })
+      .onClick(() => {
+        this.usernameLoginMode = false
+        this.registerMode = true
       })
   }
 
@@ -350,6 +444,7 @@ export struct OtherLoginPage {
       .margin({ top: Constants.PADDING_M })
       .onClick(() => {
         this.registerMode = false
+        this.usernameLoginMode = false
         this.registerUsername = ''
         this.registerPassword = ''
         this.registerConfirmPassword = ''

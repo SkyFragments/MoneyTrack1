@@ -12,6 +12,7 @@ import { ApiController, LoginEventDispatcher } from '../utils/Utils';
 import { OnWXResp, wxEventHandler } from '../utils/WXApiUtils';
 import { WXLoginService } from '../utils/WXLoginService';
 import { AuthCache, iData } from 'commonlib';
+import { AuthApis } from 'lib_network';
 
 @ObservedV2
 export class AggregatedLoginVM {
@@ -380,6 +381,20 @@ export class AggregatedLoginVM {
   async registerUser(username: string, password: string): Promise<boolean> {
     if (this.registerFn) {
       return this.registerFn(username, password);
+    }
+    return false;
+  }
+
+  async usernameLogin(username: string, password: string): Promise<boolean> {
+    if (this.registerFn) {
+      const res = await AuthApis.login({ username, password });
+      if (res.code === 0 && res.data) {
+        AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
+        AuthCache.setUserId(res.data.user?.id ?? '');
+        AuthCache.setUserType('full');
+        iData.global.isLogin = true;
+        return true;
+      }
     }
     return false;
   }

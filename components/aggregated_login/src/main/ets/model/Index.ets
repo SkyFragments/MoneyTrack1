@@ -50,6 +50,8 @@ export class NavParam {
   @Trace themeColor: ResourceColor = '#0A59F7';
   @Trace isSheet: boolean = false;
   @Trace isPersistence: boolean = false;
+  @Trace registerMode: boolean = false;
+  @Trace usernameLoginMode: boolean = false;
   icon: ResourceStr = '';
   @Trace loginTypes: Channel[] = [];
 }
