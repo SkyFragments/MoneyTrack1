@@ -49,7 +49,7 @@ const authLimiter = rateLimit({
 app.use('/api/auth', authLimiter, authRoutes);
 
 // Guest routes (public, for creating guest accounts)
-app.use('/api/guest', guestRoutes);
+app.use('/api/guest', authLimiter, guestRoutes);
 
 // Protected routes (require auth)
 app.use('/api/categories', authMiddleware, categoryRoutes);

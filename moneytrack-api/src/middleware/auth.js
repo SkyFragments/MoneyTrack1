@@ -23,11 +23,10 @@ async function authMiddleware(req, res, next) {
     req.userId = decoded.userId;
 
     const user = await userService.findById(decoded.userId);
-    if (user) {
-      req.userType = user.userType || 'full';
-    } else {
-      req.userType = 'full';
+    if (!user) {
+      return res.status(401).json({ code: 401, msg: 'User not found or deleted' });
     }
+    req.userType = user.userType || 'full';
 
     next();
   } catch (err) {

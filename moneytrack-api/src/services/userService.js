@@ -44,7 +44,7 @@ async function validateUser(usernameOrEmail, password) {
 
 async function findById(id) {
   const db = await getDb();
-  const stmt = db.prepare('SELECT id, username, email, createdAt FROM users WHERE id = ? AND deleted = 0');
+  const stmt = db.prepare('SELECT id, username, email, userType, createdAt FROM users WHERE id = ? AND deleted = 0');
   stmt.bind([id]);
   stmt.step();
   const user = stmt.getAsObject();
@@ -76,7 +76,7 @@ async function createFromHuawei(openId, email) {
   stmt.free();
   await saveDbAsync();
 
-  return { id, email, huaweiOpenId: openId, createdAt: now };
+  return { id, email, huaweiOpenId: openId, userType: 'full', createdAt: now };
 }
 
 async function createGuestUser() {
@@ -107,7 +107,7 @@ async function upgradeGuestUser(userId, username, password) {
   stmt.free();
   await saveDbAsync();
 
-  return findById(userId);
+  return { id: userId, username, userType: 'full', createdAt: now };
 }
 
 module.exports = {
