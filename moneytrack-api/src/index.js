@@ -25,8 +25,11 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 // CORS - allow HarmonyOS and web clients
+// NOTE: In production, restrict origin via ALLOWED_ORIGIN env var
 app.use(cors({
-  origin: '*',
+  origin: process.env.NODE_ENV === 'production'
+    ? (process.env.ALLOWED_ORIGIN || '*')
+    : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

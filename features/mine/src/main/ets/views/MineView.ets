@@ -165,9 +165,7 @@ export struct MineView {
                     username: this.upgradeUsername,
                     password: this.upgradePassword
                   })
-                  if (success) {
-                    UIDialog.closeLast()
-                  }
+                  UIDialog.closeLast()
                 },
                 onCancel: () => {
                   UIDialog.closeLast()

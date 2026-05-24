@@ -93,7 +93,7 @@ export class LoginUtil {
         } else {
           ToastDialog.showToast({ message: huaweiRes.msg || '登录失败' });
         }
-      } catch (error) {
+      } catch (_error) {
         ToastDialog.showToast({ message: '网络错误，请稍后重试' });
       }
     } else {
@@ -124,7 +124,7 @@ export class LoginUtil {
         } else {
           ToastDialog.showToast({ message: phoneRes.msg || '登录失败' });
         }
-      } catch (error) {
+      } catch (_error) {
         ToastDialog.showToast({ message: '网络错误，请稍后重试' });
       }
     }
