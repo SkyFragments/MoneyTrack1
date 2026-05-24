@@ -143,6 +143,7 @@ export struct AggregatedLogin {
                 loginTypes: this.loginTypes,
                 isPersistence: this.isPersistence,
                 registerMode: false,
+                usernameLoginMode: false,
               });
             })
 

@@ -386,7 +386,7 @@ export class AggregatedLoginVM {
   }
 
   async usernameLogin(username: string, password: string): Promise<boolean> {
-    if (this.registerFn) {
+    if (this.registerFn !== undefined) {
       const res = await AuthApis.login({ username, password });
       if (res.code === 0 && res.data) {
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
