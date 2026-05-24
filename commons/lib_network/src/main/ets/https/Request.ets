@@ -20,7 +20,7 @@ instance.interceptors.request.use(
     return config;
   },
   (error: AxiosError): Promise<AxiosError> => {
-    console.error('[Request] request error:', error.message, 'url=', error.config?.baseURL + error.config?.url);
+    console.error('[Request] request error:', error.message, 'url=', error.config?.baseURL || '', error.config?.url || '');
     return Promise.reject(error);
   }
 );
@@ -31,7 +31,7 @@ instance.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    console.error('[Request] response error:', error.response?.status, error.message, 'url=', error.config?.baseURL + error.config?.url);
+    console.error('[Request] response error:', error.response?.status, error.message, 'url=', error.config?.baseURL || '', error.config?.url || '');
     return Promise.reject(error);
   }
 );
