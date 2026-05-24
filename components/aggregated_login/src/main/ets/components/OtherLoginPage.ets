@@ -3,7 +3,12 @@ import { Constants, LoginType } from '../common/Constant';
 import { AggregatedLoginVM } from '../viewmodel/AggregatedLoginVM';
 import { AgreePrivacyBox } from './AgreePrivacyBox';
 import { LoginSheetUtils } from '../utils/LoginSheetUtils';
-import { LoginUtil } from 'commonlib';
+import { LoginUtil } from '../../../features/mine/src/main/ets/viewmodels/LoginVM';
+
+@Builder
+function OtherLoginPageBuilder() {
+  OtherLoginPage()
+}
 
 @ComponentV2
 export struct OtherLoginPage {
