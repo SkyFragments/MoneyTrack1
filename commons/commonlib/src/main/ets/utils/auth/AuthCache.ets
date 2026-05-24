@@ -10,6 +10,16 @@ export class AuthCacheModel {
   public userId: string = '';
   @Trace
   public userType: string = '';
+  @Trace
+  public phoneNumber: string = '';
+
+  clear(): void {
+    this.accessToken = '';
+    this.refreshToken = '';
+    this.userId = '';
+    this.userType = '';
+    this.phoneNumber = '';
+  }
 }
 
 const AUTH_CACHE_KEY = 'AuthCacheModel';
@@ -63,11 +73,7 @@ class AuthCache {
   }
 
   static clear(): void {
-    const cache = AuthCache.getInstance();
-    cache.accessToken = '';
-    cache.refreshToken = '';
-    cache.userId = '';
-    cache.userType = '';
+    AuthCacheModel.getInstance().clear();
   }
 }
 

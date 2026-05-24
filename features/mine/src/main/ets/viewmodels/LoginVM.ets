@@ -209,6 +209,7 @@ export class LoginUtil {
     try {
       const res = await AuthApis.register(params)
       if (res.code === 0 && res.data) {
+        AuthCache.clear();
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
@@ -243,6 +244,7 @@ export class LoginUtil {
     try {
       const res = await AuthApis.upgrade(params as UpgradeParams)
       if (res.code === 0 && res.data) {
+        AuthCache.clear();
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
