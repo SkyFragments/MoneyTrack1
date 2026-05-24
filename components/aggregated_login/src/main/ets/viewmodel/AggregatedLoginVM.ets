@@ -379,21 +379,38 @@ export class AggregatedLoginVM {
   }
 
   async registerUser(username: string, password: string): Promise<boolean> {
-    if (this.registerFn) {
-      return this.registerFn(username, password);
+    if (this.registerFn !== undefined) {
+      try {
+        const result = await this.registerFn(username, password);
+        hilog.info(this.domainId, this.logTag, `registerUser success: ${result}, username: ${username}`);
+        return result;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        hilog.error(this.domainId, this.logTag, `registerUser error: ${msg}, username: ${username}`);
+        throw err;
+      }
     }
     return false;
   }
 
   async usernameLogin(username: string, password: string): Promise<boolean> {
     if (this.registerFn !== undefined) {
-      const res = await AuthApis.login({ username, password });
-      if (res.code === 0 && res.data) {
-        AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
-        AuthCache.setUserId(res.data.user?.id ?? '');
-        AuthCache.setUserType('full');
-        iData.global.isLogin = true;
-        return true;
+      try {
+        const res = await AuthApis.login({ username, password });
+        hilog.info(this.domainId, this.logTag, `usernameLogin response: code=${res.code}, hasData=${!!res.data}`);
+        if (res.code === 0 && res.data) {
+          AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
+          AuthCache.setUserId(res.data.user?.id ?? '');
+          AuthCache.setUserType('full');
+          iData.global.isLogin = true;
+          return true;
+        }
+        hilog.error(this.domainId, this.logTag, `usernameLogin failed: code=${res.code}, msg=${res.msg}`);
+        return false;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        hilog.error(this.domainId, this.logTag, `usernameLogin error: ${msg}`);
+        throw err;
       }
     }
     return false;

@@ -325,7 +325,12 @@ export struct OtherLoginPage {
       this.vm.usernameLogin(this.registerUsername, this.registerPassword).then((success) => {
         if (success) {
           this.routerModule.pop()
+        } else {
+          ToastDialog.showToast({ message: '登录失败，请检查用户名和密码' })
         }
+      }).catch((err: Error) => {
+        console.error('[OtherLoginPage] usernameLogin error:', err.message, JSON.stringify(err))
+        ToastDialog.showToast({ message: '登录异常: ' + (err.message || '未知错误') })
       })
     })
 
@@ -433,7 +438,12 @@ export struct OtherLoginPage {
       this.vm.registerUser(params.username, params.password).then((success) => {
         if (success) {
           this.routerModule.pop()
+        } else {
+          ToastDialog.showToast({ message: '注册失败，请重试' })
         }
+      }).catch((err: Error) => {
+        console.error('[OtherLoginPage] registerUser error:', err.message, JSON.stringify(err))
+        ToastDialog.showToast({ message: '注册异常: ' + (err.message || '未知错误') })
       })
     })
 
