@@ -5,20 +5,15 @@ import { AgreePrivacyBox } from './AgreePrivacyBox';
 import { LoginSheetUtils } from '../utils/LoginSheetUtils';
 import { LoginUtil } from 'commonlib';
 
-@Builder
-export function OtherLoginPageBuilder() {
-  OtherLoginPage()
-}
-
 @ComponentV2
 export struct OtherLoginPage {
   vm: AggregatedLoginVM = AggregatedLoginVM.getInstance(false);
   @Local routerModule: NavPathStack = new NavPathStack();
   pageParam: NavParam = new NavParam();
-  @State registerMode: boolean = false;
-  @State registerUsername: string = '';
-  @State registerPassword: string = '';
-  @State registerConfirmPassword: string = '';
+  @Local registerMode: boolean = false;
+  @Local registerUsername: string = '';
+  @Local registerPassword: string = '';
+  @Local registerConfirmPassword: string = '';
 
   aboutToAppear(): void {
     this.vm.registerOnWXRespCallback();

@@ -20,18 +20,16 @@ interface SyncPullResult {
 class SyncApis {
   public pull(params?: object): Promise<BaseResponse<SyncPullResult>> {
     if (AuthCache.getUserType() === 'guest') {
-      // Local-only mode: skip network sync
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync pull');
       return Promise.resolve({ code: 0, data: { accounts: [], transactions: [], assets: [], budgets: [], categories: [], serverTime: '' } } as BaseResponse<SyncPullResult>);
     }
     return request.get(RequestUrlMap.SYNC_PULL, { params })
   }
 
-  public push(data?: object): Promise<BaseResponse<{synced: number}>> {
+  public push(data?: { accounts?: object[]; transactions?: object[]; assets?: object[]; budgets?: object[] }): Promise<BaseResponse<{ synced: number }>> {
     if (AuthCache.getUserType() === 'guest') {
-      // Local-only mode: skip network sync
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync push');
-      return Promise.resolve({ code: 0, data: { synced: 0 } } as BaseResponse<{synced: number}>);
+      return Promise.resolve({ code: 0, data: { synced: 0 } } as BaseResponse<{ synced: number }>);
     }
     return request.post(RequestUrlMap.SYNC_PUSH, data)
   }

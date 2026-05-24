@@ -4,7 +4,6 @@ import { BillInfoCard } from '../components/BillInfoCard';
 import { MineVM } from '../viewmodels/MineVM';
 import { LoginUtil } from '../viewmodels/LoginVM';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
-import { TextInput } from '@kit.ArkUI';
 
 @ComponentV2
 export struct MineView {

@@ -3,11 +3,16 @@ import { common } from '@kit.AbilityKit';
 import * as wxopensdk from '@tencent/wechat_open_sdk';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
-import { LoginController, LoginParams, LoginChannelType, RegisterParams } from 'aggregated_login';
+import { LoginController, LoginParams, LoginChannelType } from 'aggregated_login';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
 import { AuthApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+
+interface RegisterParams {
+  username: string;
+  password: string;
+}
 
 const TAG = 'LoginVM';
 const DOMAIN = 0x0000;
@@ -193,7 +198,7 @@ export class LoginUtil {
       const res = await AuthApis.register(params)
       if (res.code === 0 && res.data) {
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
-        AuthCache.setUserId(res.data.user.id)
+        AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
         iData.global.isLogin = true
         ToastDialog.showToast({ message: '注册成功' })

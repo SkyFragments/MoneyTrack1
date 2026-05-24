@@ -57,6 +57,11 @@ interface PhoneSendParams {
   phoneNumber: string;
 }
 
+interface UpgradeParams {
+  username: string;
+  password: string;
+}
+
 class AuthApis {
   public me(): Promise<BaseResponse<MeResponseData>> {
     return request.get(RequestUrlMap.AUTH_ME)
@@ -78,7 +83,7 @@ class AuthApis {
     return request.post(RequestUrlMap.AUTH_HUAWEI_LOGIN, params)
   }
 
-  public upgrade(params: { username: string; password: string }): Promise<BaseResponse<LoginResponseData>> {
+  public upgrade(params: UpgradeParams): Promise<BaseResponse<LoginResponseData>> {
     return request.post(RequestUrlMap.AUTH_UPGRADE, params)
   }
 
