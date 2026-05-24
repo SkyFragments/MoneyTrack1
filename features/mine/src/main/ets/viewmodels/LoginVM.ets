@@ -4,8 +4,9 @@ import * as wxopensdk from '@tencent/wechat_open_sdk';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
 import { LoginController, LoginParams, LoginChannelType, RegisterParams } from 'aggregated_login';
+import { UserLoginReq } from 'lib_network';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
-import { AuthApis } from 'lib_network';
+import { AuthApis, UserApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -60,29 +61,42 @@ export class LoginUtil {
   }
 
   static async handleLoginEvent(msg: string, loginParams?: LoginParams, isOtherPage: boolean = false): Promise<void> {
-    const openId: string = loginParams?.unionID ?? '';
-    const huaweiRes = await AuthApis.huaweiLogin({ openId: openId });
-    if (huaweiRes.code === 0 && huaweiRes.data) {
-      const loginData = huaweiRes.data;
-      const accessToken: string = loginData.accessToken;
-      const refreshToken: string = loginData.refreshToken;
-      AuthCache.setTokens(accessToken, refreshToken);
-      if (loginData.user?.id) {
-        AuthCache.setUserId(loginData.user.id);
-      }
-      iData.global.isLogin = true;
-      ToastDialog.showToast({ message: msg });
-      const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
-      if (memberList.nonRenewList.length) {
-        iData.global.userInfo.isMember = true;
-      }
-      RouterModule.pop();
-      if (isOtherPage) {
-        if (loginParams?.phoneNumbers?.length === 11) {
-          iData.global.userInfo.anonymousPhone =
-            loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+    if (loginParams?.unionID) {
+      const huaweiRes = await AuthApis.huaweiLogin({ openId: loginParams.unionID });
+      if (huaweiRes.code === 0 && huaweiRes.data) {
+        const loginData = huaweiRes.data;
+        AuthCache.setTokens(loginData.accessToken, loginData.refreshToken);
+        if (loginData.user?.id) {
+          AuthCache.setUserId(loginData.user.id);
+        }
+        iData.global.isLogin = true;
+        ToastDialog.showToast({ message: msg });
+        const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
+        if (memberList.nonRenewList.length) {
+          iData.global.userInfo.isMember = true;
         }
         RouterModule.pop();
+        if (isOtherPage) {
+          if (loginParams?.phoneNumbers?.length === 11) {
+            iData.global.userInfo.anonymousPhone =
+              loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+          }
+          RouterModule.pop();
+        }
+      }
+    } else {
+      const userRes = await UserApis.login(loginParams as UserLoginReq);
+      if (userRes.code === 0 && userRes.data) {
+        iData.global.isLogin = true;
+        ToastDialog.showToast({ message: msg });
+        RouterModule.pop();
+        if (isOtherPage) {
+          if (loginParams?.phoneNumbers?.length === 11) {
+            iData.global.userInfo.anonymousPhone =
+              loginParams.phoneNumbers.slice(0, 3) + '****' + loginParams.phoneNumbers.slice(7);
+          }
+          RouterModule.pop();
+        }
       }
     }
   }
