@@ -118,6 +118,25 @@ class AccountingDB extends BaseDB {
     });
   }
 
+  // 根据 accountId 查询账本是否存在（用于云同步去重）
+  public async getAccountById(accountId: number): Promise<AccountTableBasis | null> {
+    const condition: TablePredicateParams = {
+      field: AccountTableFields.ACCOUNT_ID,
+      value: accountId,
+      operator: DBOperator.EQUAL,
+    };
+    try {
+      const results = await this.query<AccountTableBasis>(
+        AccountingDBConstants.ACCOUNT_TABLE_NAME,
+        [condition]
+      );
+      return results.length > 0 ? results[0] : null;
+    } catch (err) {
+      Logger.error(TAG, 'getAccountById failed. error:' + JSON.stringify(err));
+      return null;
+    }
+  }
+
   // 删除账本
   public async deleteAccount(accountId: number) {
     const condition: TablePredicateParams = {
@@ -255,8 +274,17 @@ class AccountingDB extends BaseDB {
 
   // 新增交易记录
   public async addTransaction(userTx: UserTransaction): Promise<void> {
+    return this.addTransactionInner(userTx, false);
+  }
+
+  /**
+   * 云同步时从服务端拉取数据专用（不触发 AUTOINCREMENT，覆盖 transactionId）
+   * @param userTx 交易数据
+   * @param serverId 服务端分配的 transactionId（用于覆盖本地值）
+   */
+  public async syncAddTransaction(userTx: UserTransaction, serverId: number): Promise<void> {
     const tx: TransactionTableBasis = {
-      transactionId: userTx.transactionId ?? new Date().getTime(),
+      transactionId: serverId,
       accountId: userTx.accountId,
       type: userTx.type,
       resource: userTx.resource,
@@ -269,16 +297,42 @@ class AccountingDB extends BaseDB {
     return this.transaction(async () => {
       try {
         await this.insert(AccountingDBConstants.TRANSACTION_TABLE_NAME, tx);
+        Logger.info(TAG, 'syncAddTransaction success, serverId=' + serverId);
+      } catch (err) {
+        Logger.error(TAG, 'syncAddTransaction failed. error:' + JSON.stringify(err));
+      }
+    });
+  }
+
+  /**
+   * 内部新增交易方法
+   * @param userTx 交易数据
+   * @param isSyncInsert 是否为云同步拉取（true=直接插入不检查，false=走正常新建流程）
+   */
+  private async addTransactionInner(userTx: UserTransaction, _isSyncInsert: boolean): Promise<void> {
+    const localId = userTx.transactionId ?? new Date().getTime();
+    const tx: TransactionTableBasis = {
+      transactionId: localId,
+      accountId: userTx.accountId,
+      type: userTx.type,
+      resource: userTx.resource,
+      amount: userTx.amount,
+      date: userTx.date,
+      note: userTx.note,
+      excluded: userTx.excluded,
+      assetId: userTx.assetId,
+      localId: localId,
+    };
+    return this.transaction(async () => {
+      try {
+        await this.insert(AccountingDBConstants.TRANSACTION_TABLE_NAME, tx);
         ToastDialog.showToast({ message: '交易记录新增成功~' });
         await this.updateAssetAccountFromTransaction(userTx);
         await this._updateAccountStats(userTx.accountId);
         Logger.info(TAG, 'insert transaction success.');
       } catch (err) {
         ToastDialog.showToast({ message: '交易记录新增失败，请稍后重试~' });
-        Logger.error(
-          TAG,
-          'insert transaction failed. error:' + JSON.stringify(err),
-        );
+        Logger.error(TAG, 'insert transaction failed. error:' + JSON.stringify(err));
       }
     });
   }

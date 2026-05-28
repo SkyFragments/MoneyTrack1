@@ -29,6 +29,7 @@ const AUTH_CACHE_KEY = 'AuthCacheModel';
 
 class AuthCache {
   private static _instance: AuthCacheModel | null = null;
+  private static _persisted: boolean = true;
 
   static getInstance(): AuthCacheModel {
     if (!AuthCache._instance) {
@@ -39,11 +40,18 @@ class AuthCache {
       );
       if (!connected) {
         AuthCache._instance = new AuthCacheModel();
+        AuthCache._persisted = false;
+        console.error('[AuthCache] PersistenceV2.connect failed — using in-memory storage, tokens will be lost on restart');
       } else {
         AuthCache._instance = connected;
+        AuthCache._persisted = true;
       }
     }
     return AuthCache._instance!;
+  }
+
+  static isPersisted(): boolean {
+    return AuthCache._persisted;
   }
 
   static setTokens(accessToken: string, refreshToken: string): void {

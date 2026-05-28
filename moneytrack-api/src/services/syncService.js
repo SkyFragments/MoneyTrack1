@@ -39,7 +39,7 @@ async function pull(userId, since = 0) {
     else if (table === 'budgets') selectCols = 'id AS budgetId, userId, accountId, month, amount, createdAt, updatedAt';
     const stmt = db.prepare(`
       SELECT ${selectCols} FROM ${table}
-      WHERE userId = ? AND updatedAt > ?
+      WHERE userId = ? AND deleted = 0 AND updatedAt > ?
       ORDER BY id ASC
     `);
     stmt.bind([userId, sinceDate]);
@@ -96,7 +96,7 @@ async function push(userId, data) {
   for (const item of (data.accounts || [])) {
     if (!item || typeof item !== 'object') continue;
     if (item.deleted) {
-      db.run('UPDATE accounts SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ?', [now, item.id, userId]);
+      db.run('UPDATE accounts SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ? AND deleted = 0', [now, item.id, userId]);
     } else {
       // Skip if account with same name already exists
       const existCheck = db.prepare('SELECT id FROM accounts WHERE userId = ? AND name = ? AND deleted = 0');
@@ -127,7 +127,7 @@ async function push(userId, data) {
     const resource = Number(item.resource);
     if (isNaN(resource) || !Number.isInteger(resource)) continue;
     if (item.deleted) {
-      db.run('UPDATE transactions SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ?', [now, item.id, userId]);
+      db.run('UPDATE transactions SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ? AND deleted = 0', [now, item.id, userId]);
     } else {
       const stmt = db.prepare(`
         INSERT INTO transactions (userId, accountId, resource, type, amount, date, note, excluded, assetId, localId, createdAt, updatedAt, deleted)
@@ -150,7 +150,7 @@ async function push(userId, data) {
   for (const item of (data.assets || [])) {
     if (!item || typeof item !== 'object') continue;
     if (item.deleted) {
-      db.run('UPDATE assets SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ?', [now, item.id, userId]);
+      db.run('UPDATE assets SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ? AND deleted = 0', [now, item.id, userId]);
     } else {
       const stmt = db.prepare(`
         INSERT INTO assets (userId, name, type, subType, category, amount, note, isCustom, createdAt, updatedAt, deleted)
@@ -170,7 +170,7 @@ async function push(userId, data) {
   for (const item of (data.budgets || [])) {
     if (!item || typeof item !== 'object') continue;
     if (item.deleted) {
-      db.run('UPDATE budgets SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ?', [now, item.id, userId]);
+      db.run('UPDATE budgets SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ? AND deleted = 0', [now, item.id, userId]);
     } else {
       const check = db.prepare('SELECT id FROM budgets WHERE accountId = ? AND month = ? AND userId = ? AND deleted = 0');
       check.bind([item.accountId, item.month, userId]);

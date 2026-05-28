@@ -105,7 +105,10 @@ export class MineVM {
         const accountList: AccountTableBasis[] = (data.accounts || []) as AccountTableBasis[];
         for (const account of accountList) {
           if (account.accountId != null && account.accountId !== 0) {
-            await AccountingDB.addAccount(account);
+            const existing = await AccountingDB.getAccountById(account.accountId);
+            if (!existing) {
+              await AccountingDB.addAccount(account);
+            }
           }
         }
         const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
@@ -120,7 +123,7 @@ export class MineVM {
           if (txType !== BalanceChangeType.EXPENSE && txType !== BalanceChangeType.INCOME) {
             continue;
           }
-          await AccountingDB.addTransaction({
+          await AccountingDB.syncAddTransaction({
             transactionId: tx.transactionId as number,
             accountId: tx.accountId as number,
             type: txType as BalanceChangeType,
@@ -130,7 +133,7 @@ export class MineVM {
             note: (tx.note ?? '').toString(),
             excluded: Boolean(tx.excluded),
             assetId: (tx.assetId as number) ?? 0,
-          });
+          }, tx.transactionId as number);
         }
         const assetResult = await AccountingDB.getAssetAccount([]);
         const assetReport: AssetReport = assetResult as AssetReport;

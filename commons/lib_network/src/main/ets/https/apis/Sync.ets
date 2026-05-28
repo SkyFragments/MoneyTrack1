@@ -45,7 +45,7 @@ class SyncApis {
   public pull(params?: object): Promise<BaseResponse<SyncPullResult>> {
     if (AuthCache.getUserType() === 'guest') {
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync pull');
-      return Promise.resolve({ code: 0, data: { accounts: [], transactions: [], assets: [], budgets: [], categories: [], serverTime: 0 } } as BaseResponse<SyncPullResult>);
+      return Promise.resolve({ code: 403, msg: '本地模式不支持云端同步', data: undefined } as BaseResponse<SyncPullResult>);
     }
     const reqParams: Record<string, string> | undefined = params as Record<string, string>;
     if (reqParams) {
@@ -57,7 +57,7 @@ class SyncApis {
   public push(data?: SyncPushData): Promise<BaseResponse<SyncedResult>> {
     if (AuthCache.getUserType() === 'guest') {
       hilog.info(DOMAIN, TAG, 'Guest mode - skipping cloud sync push');
-      return Promise.resolve({ code: 0, data: { counts: { accounts: 0, transactions: 0, assets: 0, budgets: 0 }, mappings: [] } } as BaseResponse<SyncedResult>);
+      return Promise.resolve({ code: 403, msg: '本地模式不支持云端同步', data: undefined } as BaseResponse<SyncedResult>);
     }
     return request.post<BaseResponse<SyncedResult>>(RequestUrlMap.SYNC_PUSH, data)
       .then((res) => {
@@ -66,9 +66,9 @@ class SyncApis {
         }
         return res;
       })
-      .catch(() => {
-        hilog.error(DOMAIN, TAG, `push network error`);
-        return { code: -1, msg: '推送失败', data: undefined } as BaseResponse<SyncedResult>;
+      .catch((err: Error) => {
+        hilog.error(DOMAIN, TAG, `push network error: ${err.message}`);
+        return { code: -1, msg: '网络错误：' + err.message, data: undefined } as BaseResponse<SyncedResult>;
       });
   }
 }

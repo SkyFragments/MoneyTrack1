@@ -10,6 +10,7 @@ import {
 export interface UserTransaction {
   accountId: number;
   transactionId?: number;
+  localId?: number;
   type: BalanceChangeType;
   resource: number;
   amount: number;
@@ -40,6 +41,7 @@ export interface AccountTableBasis {
 
 export interface TransactionTableBasis extends UserTransaction {
   transactionId: number;
+  localId?: number;
 }
 
 export interface AmountSummary {

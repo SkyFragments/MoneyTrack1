@@ -5,9 +5,16 @@ import { UIDialog } from '@hw-agconnect/ui-dialog';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
 import { LoginController, LoginParams, LoginChannelType } from 'aggregated_login';
 import { iData, RouterModule, WindowUtil, AuthCache } from 'commonlib';
-import { AuthApis } from 'lib_network';
+import { AuthApis, SyncApis } from 'lib_network';
+import { BalanceChangeType } from 'bill_base';
+import {
+  AccountingDB,
+  AccountTableBasis,
+  TransactionTableBasis,
+  AssetTableBasis,
+  AssetReport,
+} from 'bill_data_processing';
 import type { RegisterParams, UpgradeParams } from 'lib_network';
-import { SyncApis } from 'lib_network';
 import { MemberStatusUtil } from 'membership';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -351,12 +358,59 @@ export class LoginUtil {
       const res = await SyncApis.pull();
       if (res.code === 0 && res.data) {
         const data = res.data as SyncPullResult;
+
+        // Restore accounts
+        const accountList: AccountTableBasis[] = (data.accounts || []) as AccountTableBasis[];
+        for (const account of accountList) {
+          if (account.accountId != null && account.accountId !== 0) {
+            const existing = await AccountingDB.getAccountById(account.accountId);
+            if (!existing) {
+              await AccountingDB.addAccount(account);
+            }
+          }
+        }
+
+        // Restore transactions (syncAddTransaction uses serverId as transactionId, bypasses AUTOINCREMENT)
+        const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
+        for (const tx of txList) {
+          if (tx.accountId == null || tx.accountId === 0) continue;
+          if (!tx.type) continue;
+          const txType = String(tx.type);
+          if (txType !== BalanceChangeType.EXPENSE && txType !== BalanceChangeType.INCOME) continue;
+          await AccountingDB.syncAddTransaction({
+            transactionId: tx.transactionId as number,
+            accountId: tx.accountId as number,
+            type: txType as BalanceChangeType,
+            resource: Number(tx.resource) || 0,
+            amount: Number(tx.amount) || 0,
+            date: (tx.date ?? new Date().toISOString()).toString(),
+            note: (tx.note ?? '').toString(),
+            excluded: Boolean(tx.excluded),
+            assetId: (tx.assetId as number) ?? 0,
+          }, tx.transactionId as number);
+        }
+
+        // Restore assets (only if not already existing locally)
+        const assetResult = await AccountingDB.getAssetAccount([]);
+        const assetReport: AssetReport = assetResult as AssetReport;
+        const existingAssets: AssetTableBasis[] = assetReport.assets;
+        const existingAssetIds = new Set(existingAssets.map((a: AssetTableBasis) => a.assetId));
+        const cloudAssets: AssetTableBasis[] = (data.assets || []) as AssetTableBasis[];
+        for (const asset of cloudAssets) {
+          if (asset.assetId != null && !existingAssetIds.has(asset.assetId)) {
+            await AccountingDB.addAssetAccount(asset);
+          }
+        }
+
+        // Save serverTime for next incremental sync
         if (data.serverTime) {
           const serverTime = Number(data.serverTime) || 0;
           if (serverTime > 0) {
             AuthCache.setLastSyncTime(serverTime);
           }
         }
+        hilog.info(DOMAIN, TAG, 'pullCloudData restored: accounts=%{public}d, transactions=%{public}d, assets=%{public}d',
+          accountList.length, txList.length, cloudAssets.length);
       }
     } catch (_e) {
       console.error('[LoginUtil] pullCloudData failed', _e);

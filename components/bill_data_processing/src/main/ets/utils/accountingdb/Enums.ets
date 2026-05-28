@@ -9,6 +9,7 @@ export enum AccountTableFields {
 
 export enum TransactionTableFields {
   TRANSACTION_ID = 'transactionId',
+  LOCAL_ID = 'localId',
   ACCOUNT_ID = 'accountId',
   ASSET_ID = 'assetId',
   TYPE = 'type',
