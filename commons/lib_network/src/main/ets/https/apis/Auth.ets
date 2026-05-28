@@ -26,6 +26,7 @@ interface TokenRefreshResponseData {
 interface MeResponseData {
   id: string;
   email: string;
+  username: string;
   createdAt: string;
 }
 
@@ -64,35 +65,35 @@ export interface UpgradeParams {
 
 class AuthApis {
   public me(): Promise<BaseResponse<MeResponseData>> {
-    return request.get(RequestUrlMap.AUTH_ME)
+    return request.get<BaseResponse<MeResponseData>>(RequestUrlMap.AUTH_ME)
   }
 
   public login(params: LoginParams): Promise<BaseResponse<LoginResponseData>> {
-    return request.post(RequestUrlMap.AUTH_LOGIN, params)
+    return request.post<BaseResponse<LoginResponseData>>(RequestUrlMap.AUTH_LOGIN, params)
   }
 
   public register(params: RegisterParams): Promise<BaseResponse<LoginResponseData>> {
-    return request.post(RequestUrlMap.AUTH_REGISTER, params)
+    return request.post<BaseResponse<LoginResponseData>>(RequestUrlMap.AUTH_REGISTER, params)
   }
 
   public refresh(params: RefreshParams): Promise<BaseResponse<TokenRefreshResponseData>> {
-    return request.post(RequestUrlMap.AUTH_REFRESH, params)
+    return request.post<BaseResponse<TokenRefreshResponseData>>(RequestUrlMap.AUTH_REFRESH, params)
   }
 
   public huaweiLogin(params: HuaweiLoginParams): Promise<BaseResponse<HuaweiLoginData>> {
-    return request.post(RequestUrlMap.AUTH_HUAWEI_LOGIN, params)
+    return request.post<BaseResponse<HuaweiLoginData>>(RequestUrlMap.AUTH_HUAWEI_LOGIN, params)
   }
 
   public upgrade(params: UpgradeParams): Promise<BaseResponse<LoginResponseData>> {
-    return request.post(RequestUrlMap.AUTH_UPGRADE, params)
+    return request.post<BaseResponse<LoginResponseData>>(RequestUrlMap.AUTH_UPGRADE, params)
   }
 
   public phoneLoginSend(params: PhoneSendParams): Promise<BaseResponse> {
-    return request.post(RequestUrlMap.AUTH_PHONE_SEND, params)
+    return request.post<BaseResponse>(RequestUrlMap.AUTH_PHONE_SEND, params)
   }
 
   public phoneLogin(params: PhoneLoginParams): Promise<BaseResponse<LoginResponseData>> {
-    return request.post(RequestUrlMap.AUTH_PHONE_LOGIN, params)
+    return request.post<BaseResponse<LoginResponseData>>(RequestUrlMap.AUTH_PHONE_LOGIN, params)
   }
 }
 

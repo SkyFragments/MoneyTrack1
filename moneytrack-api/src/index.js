@@ -12,6 +12,7 @@ const transactionRoutes = require('./routes/transactions');
 const assetRoutes = require('./routes/assets');
 const budgetRoutes = require('./routes/budgets');
 const syncRoutes = require('./routes/sync');
+const userRoutes = require('./routes/user');
 
 // Validate JWT_SECRET on startup
 if (!process.env.JWT_SECRET) {
@@ -20,6 +21,21 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`[${new Date().toISOString()}] >>> INCOMING ${req.method} ${req.originalUrl}`);
+  console.log(`[${new Date().toISOString()}]     remoteAddr=${req.ip || req.socket.remoteAddress}`);
+  console.log(`[${new Date().toISOString()}]     userAgent=${req.get('User-Agent') || 'none'}`);
+  console.log(`[${new Date().toISOString()}]     contentType=${req.get('Content-Type') || 'none'}`);
+  console.log(`[${new Date().toISOString()}]     accept=${req.get('Accept') || 'none'}`);
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] <<< RESPONSE ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
 
 // Middleware
 app.use(express.json());
@@ -59,12 +75,16 @@ app.use('/api/transactions', authMiddleware, transactionRoutes);
 app.use('/api/assets', authMiddleware, assetRoutes);
 app.use('/api/budgets', authMiddleware, budgetRoutes);
 app.use('/api/sync', authMiddleware, syncRoutes);
+app.use('/api/user', authMiddleware, userRoutes);
 
 // Initialize database and start server
 async function start() {
   await initializeDatabase();
-  app.listen(PORT, () => {
-    console.log(`MoneyTrack API running on port ${PORT}`);
+  // Bind to all network interfaces so mobile device can connect
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[SERVER] MoneyTrack API running on 0.0.0.0:${PORT}`);
+    console.log(`[SERVER] Accessible at http://1.12.234.7:${PORT}`);
+    console.log(`[SERVER] Health check: http://1.12.234.7:${PORT}/health`);
   });
 }
 

@@ -17,6 +17,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.avatarItem.value = param as string;
+        iData.global.userInfo.avatar = param as string;
       }
     },
   });
@@ -38,6 +39,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.nickNameItem.value = param as string;
+        iData.global.userInfo.nickname = param as string;
       }
     },
   })
@@ -72,6 +74,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.genderItem.value = param as number;
+        iData.global.userInfo.gender = param as number;
       }
     },
   })
@@ -92,6 +95,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.birthItem.value = param as Date;
+        iData.global.userInfo.birth = param as Date;
       }
     },
   })
@@ -113,6 +117,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.nameItem.value = param as string;
+        iData.global.userInfo.name = param as string;
       }
     },
   })
@@ -144,6 +149,7 @@ export class EditProfileVM {
       })
       if (res.code === 0) {
         this.phoneItem.value = param as string;
+        iData.global.userInfo.anonymousPhone = param as string;
       }
     },
   })

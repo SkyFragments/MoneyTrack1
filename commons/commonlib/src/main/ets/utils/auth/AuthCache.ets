@@ -12,6 +12,8 @@ export class AuthCacheModel {
   public userType: string = '';
   @Trace
   public phoneNumber: string = '';
+  @Trace
+  public lastSyncTime: number = 0;
 
   clear(): void {
     this.accessToken = '';
@@ -19,6 +21,7 @@ export class AuthCacheModel {
     this.userId = '';
     this.userType = '';
     this.phoneNumber = '';
+    this.lastSyncTime = 0;
   }
 }
 
@@ -29,11 +32,16 @@ class AuthCache {
 
   static getInstance(): AuthCacheModel {
     if (!AuthCache._instance) {
-      AuthCache._instance = PersistenceV2.connect(
+      const connected = PersistenceV2.connect(
         AuthCacheModel,
         AUTH_CACHE_KEY,
         () => new AuthCacheModel(),
-      )!;
+      );
+      if (!connected) {
+        AuthCache._instance = new AuthCacheModel();
+      } else {
+        AuthCache._instance = connected;
+      }
     }
     return AuthCache._instance!;
   }
@@ -57,9 +65,13 @@ class AuthCache {
     return AuthCache.getInstance().refreshToken;
   }
 
-  static getUserType(): 'full' | 'guest' | null {
+  static getUserType(): 'full' | 'guest' {
     const type = AuthCache.getInstance().userType;
-    return type === '' ? null : type as 'full' | 'guest';
+    if (type === 'full' || type === 'guest') {
+      return type;
+    }
+    // Uninitialized ('') or unknown value → treat as guest
+    return 'guest';
   }
 
   static setUserType(type: 'full' | 'guest'): void {
@@ -74,6 +86,14 @@ class AuthCache {
 
   static clear(): void {
     AuthCache.getInstance().clear();
+  }
+
+  static getLastSyncTime(): number {
+    return AuthCache.getInstance().lastSyncTime;
+  }
+
+  static setLastSyncTime(serverTime: number): void {
+    AuthCache.getInstance().lastSyncTime = serverTime;
   }
 }
 

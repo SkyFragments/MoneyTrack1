@@ -33,4 +33,5 @@ export class ApiController {
 
 export class LoginController {
   clearLoginInfo: () => void = () => {};
+  signOut: () => void = () => {};
 }

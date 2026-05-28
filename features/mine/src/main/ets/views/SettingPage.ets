@@ -97,6 +97,7 @@ export struct SettingPage {
                     UIDialog.closeLast();
                     AuthCache.clear();
                     iData.global.isLogin = false;
+                    iData.global.userInfo.reset();
                     ToastDialog.showToast({ message: '已退出登录' });
                     RouterModule.pop();
                   }

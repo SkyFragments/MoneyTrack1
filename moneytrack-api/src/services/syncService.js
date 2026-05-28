@@ -49,10 +49,12 @@ async function pull(userId, since = 0) {
     result[table] = rows;
   }
 
-  // 下发预置分类 (isPreset=1)
-  const catStmt = db.prepare('SELECT * FROM categories WHERE isPreset = 1 AND deleted = 0 ORDER BY key ASC');
-  while (catStmt.step()) result.categories.push(catStmt.getAsObject());
-  catStmt.free();
+  // 下发预置分类 — only on full pull (since=0 or empty)
+  if (!since || since === 0) {
+    const catStmt = db.prepare('SELECT * FROM categories WHERE isPreset = 1 AND deleted = 0 ORDER BY key ASC');
+    while (catStmt.step()) result.categories.push(catStmt.getAsObject());
+    catStmt.free();
+  }
 
   return result;
 }
@@ -96,6 +98,15 @@ async function push(userId, data) {
     if (item.deleted) {
       db.run('UPDATE accounts SET deleted = 1, updatedAt = ? WHERE id = ? AND userId = ?', [now, item.id, userId]);
     } else {
+      // Skip if account with same name already exists
+      const existCheck = db.prepare('SELECT id FROM accounts WHERE userId = ? AND name = ? AND deleted = 0');
+      existCheck.bind([userId, item.name]);
+      if (existCheck.step()) {
+        existCheck.free();
+        // Account with same name exists — skip duplicate insert
+        continue;
+      }
+      existCheck.free();
       const stmt = db.prepare(
         'INSERT INTO accounts (userId, name, type, date, accountIncome, accountExpense, createdAt, updatedAt, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)'
       );
@@ -164,8 +175,9 @@ async function push(userId, data) {
       const check = db.prepare('SELECT id FROM budgets WHERE accountId = ? AND month = ? AND userId = ? AND deleted = 0');
       check.bind([item.accountId, item.month, userId]);
       if (check.step()) {
+        const foundId = check.getAsObject().id;
         check.free();
-        db.run('UPDATE budgets SET amount = ?, updatedAt = ?, deleted = 0 WHERE accountId = ? AND month = ? AND userId = ? AND deleted = 0', [item.amount, now, item.accountId, item.month, userId]);
+        db.run('UPDATE budgets SET amount = ?, updatedAt = ?, deleted = 0 WHERE id = ?', [item.amount, now, foundId]);
         counts.budgets++;
       } else {
         check.free();

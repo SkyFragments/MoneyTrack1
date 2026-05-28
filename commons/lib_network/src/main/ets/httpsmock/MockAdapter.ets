@@ -1,20 +1,10 @@
-import AxiosMockAdapter from '@hw-agconnect/axios-mock-adapter';
-import { UserMockApis } from './mockapis/UserMock';
-import instance from '../https/Request';
-
-// 创建mock拦截器
-const mockAdapter = new AxiosMockAdapter(instance, {
-  delayResponse: 300,
-});
-
-// 全局配置，是否启用mock，已禁用（连接真实服务器）
+// Mock 已禁用，不再使用 AxiosMockAdapter
+// 如果需要启用 mock，恢复 AxiosMockAdapter 并更新 request 实例类型
 const enableMock: boolean = false;
 
 if (enableMock) {
-  const mockApis = [
-    new UserMockApis(),
-  ];
-  mockApis.forEach((api) => {
-    api.start(mockAdapter);
-  });
+  // TODO: 需要使用新的 http 模块更新 mock 实现
+  console.info('[MockAdapter] mock is disabled');
 }
+
+export {};

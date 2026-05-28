@@ -179,22 +179,18 @@ export struct MineView {
   }
 
   @Builder serviceMenuArea() {
-    ContainerColumn({ bottomGap: false }) {
-      Column() {
-        Text('常用服务')
-          .fontSize(18)
-          .fontColor($r('sys.color.font_primary'))
-          .fontWeight(FontWeight.Bold)
-          .margin({ top: $r('app.string.space_m'), bottom: $r('app.string.space_xs') })
-        SettingCard({
-          list: this.vm.list,
-        })
-      }
-      .margin({ top: 4 })
-      .height('148')
-      .width($r('app.string.width_percent_full'))
-      .alignItems(HorizontalAlign.Start)
+    Column() {
+      Text('常用服务')
+        .fontSize(18)
+        .fontColor($r('sys.color.font_primary'))
+        .fontWeight(FontWeight.Bold)
+        .margin({ top: $r('app.string.space_m'), bottom: $r('app.string.space_xs') })
+      SettingCard({
+        list: this.vm.list,
+      })
     }
+    .width($r('app.string.width_percent_full'))
+    .alignItems(HorizontalAlign.Start)
   }
 
   @Builder upgradeDialogBuilder() {
@@ -226,6 +222,7 @@ export struct MineView {
         })
     }
     .width('100%')
+    .layoutWeight(1)
     .padding(16)
   }
 

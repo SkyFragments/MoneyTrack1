@@ -11,8 +11,16 @@ import { LoginSheetUtils } from '../utils/LoginSheetUtils';
 import { ApiController, LoginEventDispatcher } from '../utils/Utils';
 import { OnWXResp, wxEventHandler } from '../utils/WXApiUtils';
 import { WXLoginService } from '../utils/WXLoginService';
-import { AuthCache, iData } from 'commonlib';
-import { AuthApis } from 'lib_network';
+import { ToastDialog } from '@hw-agconnect/ui-toast';
+import { AuthCache, iData, RouterMap, RouterModule } from 'commonlib';
+import { AuthApis, SyncApis } from 'lib_network';
+
+interface MeResponseData {
+  id: string;
+  email: string;
+  username: string;
+  createdAt: string;
+}
 
 @ObservedV2
 export class AggregatedLoginVM {
@@ -77,6 +85,7 @@ export class AggregatedLoginVM {
   public static clearInstance() {
     AuthCache.clear();
     iData.global.isLogin = false;
+    iData.global.userInfo.reset();
     AggregatedLoginVM._instance = null;
   }
 
@@ -89,6 +98,7 @@ export class AggregatedLoginVM {
     this.persistenceData.phoneNumber = '';
     clearInterval(this.timer);
     iData.global.isLogin = false;
+    iData.global.userInfo.reset();
   }
 
   setValue(isSheet: boolean, autoSheet: boolean, isPersistence: boolean, apiController: ApiController,
@@ -120,6 +130,10 @@ export class AggregatedLoginVM {
         hilog.error(this.domainId, this.logTag,
           `Failed to showToast. Code is ${error.code}, Message is ${error.message}`);
       }
+    }
+    // Close sheet after WeChat interaction (success or fail — user needs to see result)
+    if (this.isSheet && this.autoSheet) {
+      LoginSheetUtils.close();
     }
   }
 
@@ -210,6 +224,14 @@ export class AggregatedLoginVM {
       if (this.isSheet && this.autoSheet) {
         LoginSheetUtils.close();
       }
+    }).catch(() => {
+      this.isLoading = false;
+      hilog.error(this.domainId, this.logTag, `verifyCode failed`);
+      try {
+        this.uiContext?.getPromptAction().showToast({ message: '验证码验证失败，请稍后重试' });
+      } catch (_e) {
+        hilog.error(this.domainId, this.logTag, `showToast failed: ${_e}`);
+      }
     });
   }
 
@@ -266,7 +288,7 @@ export class AggregatedLoginVM {
         // 获取到UnionID、OpenID、匿名手机号
         this.unionID = response.data?.unionID ?? '';
         this.openID = response.data?.openID ?? '';
-        this.authorizationCode = response.data!.authorizationCode;
+        this.authorizationCode = response.data?.authorizationCode ?? '';
         const anonymousPhone = response.data?.extraInfo?.quickLoginAnonymousPhone as string;
         if (anonymousPhone) {
           hilog.info(this.domainId, this.logTag, 'Succeeded in authentication.');
@@ -334,7 +356,7 @@ export class AggregatedLoginVM {
   };
 
   // 处理点击一键登录后的方法。
-  private handleLoginWithHuaweiIDButton(error: BusinessError | undefined,
+  private async handleLoginWithHuaweiIDButton(error: BusinessError | undefined,
     response: loginComponentManager.HuaweiIDCredential) {
     // if部分内容需配置好可用的调试证书和client_id
     if (error) {
@@ -363,11 +385,20 @@ export class AggregatedLoginVM {
             unionID: this.unionID,
             authorizationCode: this.authorizationCode,
           };
-          this.apiController.huaweiLogin(loginParams).then(() => {
+          try {
+            await this.apiController.huaweiLogin(loginParams);
+            // Only close sheet on success
             if (this.isSheet && this.autoSheet) {
               LoginSheetUtils.close();
             }
-          });
+          } catch (_e) {
+            // API failure — keep sheet open, error toast handled by apiController
+            hilog.error(this.domainId, this.logTag, `huaweiLogin API failed: ${_e}`);
+            this.enableStatus = true;
+          }
+        } else {
+          this.uiContext?.getPromptAction().showToast({ message: $r('app.string.select_the_agreement') });
+          this.enableStatus = true;
         }
       } else {
         this.uiContext?.getPromptAction().showToast({ message: $r('app.string.select_the_agreement') });
@@ -375,15 +406,28 @@ export class AggregatedLoginVM {
     } catch (err) {
       hilog.error(this.domainId, this.logTag,
         `Failed to LoginWithHuaweiIDButton, errCode: ${err.code}, errMessage: ${err.message}`);
+      this.enableStatus = true;
     }
   }
 
   async registerUser(username: string, password: string): Promise<boolean> {
     hilog.info(this.domainId, this.logTag, `registerUser called: username=${username}, registerFn defined=${this.registerFn !== undefined}`);
+    if (!this.isSelected) {
+      try {
+        this.uiContext?.getPromptAction().showToast({ message: $r('app.string.select_the_agreement') });
+      } catch (error) {
+        hilog.error(this.domainId, this.logTag,
+          `Failed to showToast. Code is ${error.code}, Message is ${error.message}`);
+      }
+      return false;
+    }
     if (this.registerFn !== undefined) {
       try {
         const result = await this.registerFn(username, password);
         hilog.info(this.domainId, this.logTag, `registerUser registerFn result: ${result}`);
+        if (result && this.isSheet && this.autoSheet) {
+          LoginSheetUtils.close();
+        }
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -401,10 +445,33 @@ export class AggregatedLoginVM {
         const res = await AuthApis.login({ username, password });
         hilog.info(this.domainId, this.logTag, `usernameLogin response: code=${res.code}, hasData=${!!res.data}`);
         if (res.code === 0 && res.data) {
+          AuthCache.clear();
           AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
           AuthCache.setUserId(res.data.user?.id ?? '');
           AuthCache.setUserType('full');
           iData.global.isLogin = true;
+          // Fetch user profile from cloud
+          try {
+            const meRes = await AuthApis.me();
+            if (meRes.code === 0 && meRes.data) {
+              const meData = meRes.data as MeResponseData;
+              iData.global.userInfo.name = meData.email;
+              iData.global.userInfo.nickname = meData.username;
+            }
+          } catch (_e) {
+            hilog.error(this.domainId, this.logTag, `usernameLogin me() failed: ${_e}`);
+            ToastDialog.showToast({ message: '获取用户信息失败' });
+            AuthCache.clear();
+            iData.global.isLogin = false;
+            iData.global.userInfo.reset();
+            return false;
+          }
+          // Pull cloud data
+          try {
+            await SyncApis.pull();
+          } catch (_e) {
+            hilog.error(this.domainId, this.logTag, `usernameLogin pull() failed: ${_e}`);
+          }
           return true;
         }
         hilog.error(this.domainId, this.logTag, `usernameLogin failed: code=${res.code}, msg=${res.msg}`);

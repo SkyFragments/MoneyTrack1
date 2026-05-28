@@ -174,13 +174,17 @@ export abstract class BaseDB {
     }
   }
 
-  protected async executeSql(sql: string): Promise<void> {
+  protected async executeSql(sql: string, args?: (string | number)[]): Promise<void> {
     if (!this.rdbStore) {
       return;
     }
 
     try {
-      await this.rdbStore.executeSql(sql);
+      if (args) {
+        await this.rdbStore.executeSql(sql, args);
+      } else {
+        await this.rdbStore.executeSql(sql);
+      }
     } catch (err) {
       console.error(
         TAG,

@@ -10,7 +10,7 @@ export interface UserLoginReq {
 
 export interface UpdateUserInfoReq {
   type: string // avatar nickname gender date name phone
-  value: ResourceStr | GenderType | Date
+  value: ResourceStr | GenderType | Date | string | number
 }
 
 export interface MembershipInfo {

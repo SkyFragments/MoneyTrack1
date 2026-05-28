@@ -256,7 +256,7 @@ class AccountingDB extends BaseDB {
   // 新增交易记录
   public async addTransaction(userTx: UserTransaction): Promise<void> {
     const tx: TransactionTableBasis = {
-      transactionId: new Date().getTime(),
+      transactionId: userTx.transactionId ?? new Date().getTime(),
       accountId: userTx.accountId,
       type: userTx.type,
       resource: userTx.resource,
@@ -399,6 +399,26 @@ class AccountingDB extends BaseDB {
         Logger.error(TAG, 'update transaction failed. error:' + JSON.stringify(err));
       }
     });
+  }
+
+  /**
+   * 更新交易的本地ID为服务端分配的服务器ID（云同步后调用）
+   * @param localId 客户端原始ID
+   * @param serverId 服务端分配的新ID
+   */
+  public async updateTransactionServerId(localId: number, serverId: number): Promise<boolean> {
+    try {
+      const sql = `
+        UPDATE ${AccountingDBConstants.TRANSACTION_TABLE_NAME}
+        SET transactionId = ?, updatedAt = datetime('now')
+        WHERE localId = ?
+      `;
+      await this.executeSql(sql, [serverId, localId]);
+      return true;
+    } catch (err) {
+      Logger.error(TAG, 'updateTransactionServerId failed. error:' + JSON.stringify(err));
+      return false;
+    }
   }
 
   // 获取交易记录
@@ -766,6 +786,24 @@ class AccountingDB extends BaseDB {
       return await this.querySql<TransactionTableBasis>(sql);
     } catch (err) {
       Logger.error(TAG, 'export transactions failed. error:' + JSON.stringify(err));
+      return [];
+    }
+  }
+
+  /**
+   * 获取所有预算（用于云端同步推送）
+   */
+  public async getBudgetsForSync(): Promise<BudgetTableBasis[]> {
+    try {
+      const sql = `
+        SELECT id, accountId, month, amount
+        FROM ${AccountingDBConstants.BUDGET_TABLE_NAME}
+        WHERE deleted = 0
+        ORDER BY id ASC
+      `;
+      return await this.querySql<BudgetTableBasis>(sql);
+    } catch (err) {
+      Logger.error(TAG, 'getBudgetsForSync failed. error:' + JSON.stringify(err));
       return [];
     }
   }

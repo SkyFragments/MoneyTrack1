@@ -1,49 +1,184 @@
-import axios, { AxiosResponse, InternalAxiosRequestConfig, AxiosError } from '@ohos/axios';
+import { http } from '@kit.NetworkKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { Logger } from 'commonlib';
 import { AuthCache } from 'commonlib';
+import { AuthApis } from './apis/Auth';
 
-const baseURL = 'http://1.12.234.7:8080';
+const LOCAL_IP = '1.12.234.7';
+const PORT = 8080;
+const baseURL = 'http://' + LOCAL_IP + ':' + PORT;
 
-const instance = axios.create({
-  baseURL,
-  timeout: 10 * 3000,
-  headers: {},
-});
+Logger.info('Request', '=== Request module initialized ===');
+Logger.info('Request', 'baseURL=' + baseURL);
 
-instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = AuthCache.getAccessToken();
-    console.info('[Request] fullUrl=' + (config.baseURL || '') + (config.url || ''));
-    console.info('[Request] method=' + config.method + ' timeout=' + config.timeout + ' data=' + JSON.stringify(config.data));
-    console.info('[Request] headers=' + JSON.stringify(config.headers));
-    if (token && config.headers) {
-      config.headers['Authorization'] = 'Bearer ' + token;
-      console.info('[Request] token applied, auth header present');
-    } else {
-      console.info('[Request] no token, skipping auth header');
+function buildFullUrl(url: string, params?: Record<string, string>): string {
+  let fullUrl = url.startsWith('http') ? url : baseURL + url;
+  if (params) {
+    const qs = Object.entries(params)
+      .map((e) => encodeURIComponent(e[0]) + '=' + encodeURIComponent(e[1]))
+      .join('&');
+    fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
+  }
+  return fullUrl;
+}
+
+function getHeaders(token?: string): Record<string, string> {
+  const accessToken = token ?? AuthCache.getAccessToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  if (accessToken) {
+    headers['Authorization'] = 'Bearer ' + accessToken;
+  }
+  return headers;
+}
+
+interface DoRequestOptions {
+  data?: object | string;
+  params?: Record<string, string>;
+  timeout?: number;
+}
+
+interface ErrorResponse {
+  code: number;
+  msg: string;
+  data: null;
+}
+
+const HTTP_TOKEN_REFRESHED_CODE = -401;
+
+async function tryRefreshToken(): Promise<boolean> {
+  const refreshToken = AuthCache.getRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+  try {
+    const res = await AuthApis.refresh({ refreshToken });
+    if (res.code === 0 && res.data) {
+      AuthCache.setTokens(res.data.accessToken, res.data.refreshToken);
+      return true;
     }
-    return config;
-  },
-  (error: AxiosError): Promise<AxiosError> => {
-    console.error('[Request] request interceptor ERROR:', error.message);
-    console.error('[Request] error config:', error.config ? JSON.stringify({url: error.config.url, baseURL: error.config.baseURL, method: error.config.method}) : 'null');
-    return Promise.reject(error);
+  } catch (_e) {
+    Logger.warn('Request', 'Token refresh failed: ' + _e);
   }
-);
+  return false;
+}
 
-instance.interceptors.response.use(
-  (response: AxiosResponse) => {
-    console.info('[Request] response OK:', response.status, 'url=' + (response.config.baseURL || '') + (response.config.url || ''));
-    console.info('[Request] response data:', JSON.stringify(response.data).substring(0, 200));
-    return response;
-  },
-  (error: AxiosError) => {
-    console.error('[Request] response ERROR:', error.message);
-    console.error('[Request] response status:', error.response?.status);
-    console.error('[Request] response data:', JSON.stringify(error.response?.data || 'none').substring(0, 200));
-    console.error('[Request] error config:', error.config ? JSON.stringify({url: error.config.url, baseURL: error.config.baseURL, method: error.config.method}) : 'null');
-    return Promise.reject(error);
+function doRequest<T>(url: string, method: http.RequestMethod, options: DoRequestOptions): Promise<T> {
+  const fullUrl = buildFullUrl(url, options.params ?? undefined);
+  const timeout = options.timeout ?? 30000;
+  let extraData: string | undefined;
+  if (options.data !== undefined) {
+    extraData = typeof options.data === 'string' ? options.data : JSON.stringify(options.data);
   }
-);
 
-export default instance;
+  const attempt = (retryToken?: string): Promise<T> => {
+    return new Promise<T>((resolve, reject) => {
+      const httpRequest = http.createHttp();
+      const headers = getHeaders(retryToken);
+      Logger.info('Request', '[Request] >>> ' + method + ' >>> ' + fullUrl);
+      if (retryToken) {
+        Logger.info('Request', '[Request] Using refreshed token');
+      }
+
+      httpRequest.request(fullUrl, {
+        method: method,
+        header: headers,
+        extraData: extraData,
+        connectTimeout: timeout,
+        readTimeout: timeout,
+        usingProxy: false,
+        expectDataType: http.HttpDataType.STRING,
+      }).then((resp: http.HttpResponse) => {
+        Logger.info('Request', '[Request] <<< ' + method + ' OK <<< responseCode=' + resp.responseCode);
+        const resultStr = resp.result as string;
+
+        if (resp.responseCode !== 200) {
+          let errResp: ErrorResponse;
+          try {
+            const parsedObj: Record<string, string | number> = JSON.parse(resultStr) as Record<string, string | number>;
+            errResp = {
+              code: typeof parsedObj['code'] === 'number' ? parsedObj['code'] as number : resp.responseCode,
+              msg: typeof parsedObj['msg'] === 'string' ? parsedObj['msg'] as string : ('HTTP ' + resp.responseCode),
+              data: null
+            };
+          } catch {
+            errResp = { code: resp.responseCode, msg: 'HTTP ' + resp.responseCode, data: null };
+          }
+
+          // 401 — try token refresh once
+          if (resp.responseCode === 401 && !retryToken) {
+            Logger.info('Request', '[Request] Got 401, attempting token refresh...');
+            tryRefreshToken().then((refreshed) => {
+              httpRequest.destroy();
+              if (refreshed) {
+                resolve(attempt(AuthCache.getAccessToken()) as Promise<T>);
+              } else {
+                resolve(errResp as T);
+              }
+            }).catch(() => {
+              resolve(errResp as T);
+            });
+            return;
+          }
+
+          resolve(errResp as T);
+          httpRequest.destroy();
+          return;
+        }
+
+        let parsedData: T;
+        try {
+          parsedData = JSON.parse(resultStr) as T;
+        } catch {
+          const fallback: ErrorResponse = { code: resp.responseCode, msg: 'Parse error', data: null };
+          resolve(fallback as T);
+          httpRequest.destroy();
+          return;
+        }
+
+        resolve(parsedData);
+        httpRequest.destroy();
+      }).catch((err: BusinessError) => {
+        Logger.error('Request', '[Request] !!! ' + method + ' ERROR !!! code=' + err.code + ', message=' + err.message);
+        if (err.code === 2300001 || err.code === 2300002 || err.code === 2300003) {
+          Logger.error('Request', '[Request] !!! NETWORK CONNECT ERROR !!!');
+        }
+        httpRequest.destroy();
+        reject(err);
+      });
+    });
+  };
+
+  return attempt();
+}
+
+class RequestClient {
+  get<T>(url: string): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.GET, {});
+  }
+
+  getWithParams<T>(url: string, params: Record<string, string>): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.GET, { params: params });
+  }
+
+  post<T>(url: string, data?: object): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.POST, { data: data });
+  }
+
+  put<T>(url: string, data?: object): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.PUT, { data: data });
+  }
+
+  delete<T>(url: string): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.DELETE, {});
+  }
+
+  deleteWithParams<T>(url: string, params: Record<string, string>): Promise<T> {
+    return doRequest<T>(url, http.RequestMethod.DELETE, { params: params });
+  }
+}
+
+const request = new RequestClient();
+
+export default request;

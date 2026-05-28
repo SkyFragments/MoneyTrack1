@@ -73,5 +73,6 @@ export default class EntryAbility extends UIAbility {
   clearAuthState(): void {
     AuthCache.clear();
     iData.global.isLogin = false;
+    iData.global.userInfo.reset();
   }
 }
