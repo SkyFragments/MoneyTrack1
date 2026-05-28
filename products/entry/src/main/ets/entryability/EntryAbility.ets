@@ -71,6 +71,13 @@ export default class EntryAbility extends UIAbility {
   }
 
   clearAuthState(): void {
+    // Only clear if token exists — if no token, user was never logged in, nothing to clear
+    const token = AuthCache.getAccessToken();
+    if (!token) {
+      Logger.info(TAG, 'clearAuthState skipped — no token to clear');
+      return;
+    }
+    Logger.info(TAG, 'clearAuthState clearing auth state');
     AuthCache.clear();
     iData.global.isLogin = false;
     iData.global.userInfo.reset();
