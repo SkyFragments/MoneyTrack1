@@ -63,6 +63,7 @@ export class LoginUtil {
         AuthCache.setUserId(loginData.user?.id ?? '');
         AuthCache.setUserType('full');
         iData.global.isLogin = true;
+        iData.global.userInfo.reset();
         ToastDialog.showToast({ message: '华为一键登录成功' });
         const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
         if (memberList.nonRenewList.length) {
@@ -148,6 +149,7 @@ export class LoginUtil {
         AuthCache.setUserId(phoneRes.data.user?.id ?? '');
         AuthCache.setUserType('full');
         iData.global.isLogin = true;
+        iData.global.userInfo.reset();
         ToastDialog.showToast({ message: msg });
         const memberList = await MemberStatusUtil.queryPurchase(WindowUtil.context as common.UIAbilityContext);
         if (memberList.nonRenewList.length) {
@@ -210,6 +212,7 @@ export class LoginUtil {
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
         iData.global.isLogin = true
+        iData.global.userInfo.reset()
         // Fetch user profile from cloud
         try {
           const meRes = await AuthApis.me();
@@ -260,6 +263,7 @@ export class LoginUtil {
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
         iData.global.isLogin = true
+        iData.global.userInfo.reset()
         ToastDialog.showToast({ message: '注册成功' })
         // Fetch user profile from cloud
         try {
@@ -312,6 +316,7 @@ export class LoginUtil {
         AuthCache.setUserId(res.data.user?.id ?? '')
         AuthCache.setUserType('full')
         iData.global.isLogin = true
+        iData.global.userInfo.reset()
         ToastDialog.showToast({ message: '升级成功' })
         // Fetch user profile from cloud
         try {
