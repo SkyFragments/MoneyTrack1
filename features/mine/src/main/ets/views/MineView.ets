@@ -4,7 +4,6 @@ import { BillInfoCard } from '../components/BillInfoCard';
 import { MineVM } from '../viewmodels/MineVM';
 import { LoginUtil } from '../viewmodels/LoginVM';
 import { UIDialog } from '@hw-agconnect/ui-dialog';
-import { ToastDialog } from '@hw-agconnect/ui-toast';
 
 @ComponentV2
 export struct MineView {
@@ -151,37 +150,7 @@ export struct MineView {
               this.upgradeUsername = ''
               this.upgradePassword = ''
               UIDialog.open({
-                contentBuilder: () => {
-                  Column({ space: 12 }) {
-                    Text('设置用户名和密码以升级账号，升级后可启用云同步功能。')
-                      .fontSize(14)
-                      .fontColor($r('app.color.font_color_level1'))
-                      .textAlign(TextAlign.Center)
-                      .width('100%')
-
-                    TextInput({ placeholder: '用户名（3-30字符）', text: this.upgradeUsername })
-                      .width('100%')
-                      .height(44)
-                      .backgroundColor($r('sys.color.comp_background_tertiary'))
-                      .borderRadius(8)
-                      .onChange((value: string) => {
-                        this.upgradeUsername = value
-                      })
-
-                    TextInput({ placeholder: '密码（至少6字符）', text: this.upgradePassword })
-                      .width('100%')
-                      .height(44)
-                      .backgroundColor($r('sys.color.comp_background_tertiary'))
-                      .borderRadius(8)
-                      .type(InputType.Password)
-                      .onChange((value: string) => {
-                        this.upgradePassword = value
-                      })
-                  }
-                  .width('100%')
-                  .padding(16)
-                  .justifyContent(FlexAlign.Start)
-                },
+                contentBuilder: () => this.upgradeDialogBuilder(),
                 dialogWidth: '90%',
                 confirmButtonOptions: {
                   button: '确认升级',
@@ -192,25 +161,13 @@ export struct MineView {
                   buttonFontColor: $r('app.color.font_color_level1'),
                 },
                 onConfirm: async () => {
-                  if (this.upgradeUsername.length < 3 || this.upgradeUsername.length > 30) {
-                    ToastDialog.showToast({ message: '用户名需3-30字符' })
-                    return
-                  }
-                  if (this.upgradePassword.length < 6) {
-                    ToastDialog.showToast({ message: '密码至少6字符' })
-                    return
-                  }
-                  await LoginUtil.handleUpgrade({
+                  const success = await LoginUtil.handleUpgrade({
                     username: this.upgradeUsername,
                     password: this.upgradePassword
                   })
-                  this.upgradeUsername = ''
-                  this.upgradePassword = ''
                   UIDialog.closeLast()
                 },
                 onCancel: () => {
-                  this.upgradeUsername = ''
-                  this.upgradePassword = ''
                   UIDialog.closeLast()
                 }
               })
@@ -264,10 +221,11 @@ export struct MineView {
         .onChange((value: string) => {
           this.upgradePassword = value
         })
+
+      Blank().height(0)
     }
     .width('100%')
     .padding(16)
-    .justifyContent(FlexAlign.Start)
   }
 
   }
