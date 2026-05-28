@@ -220,13 +220,14 @@ export class LoginUtil {
         AuthCache.setUserType('full')
         iData.global.isLogin = true
         iData.global.userInfo.reset()
+        iData.global.userInfo.nickname = username;
         // Fetch user profile from cloud
         try {
           const meRes = await AuthApis.me();
           if (meRes.code === 0 && meRes.data) {
             const meData = meRes.data as MeResponseData;
             iData.global.userInfo.name = meData.email;
-            iData.global.userInfo.nickname = meData.username;
+            iData.global.userInfo.nickname = meData.username || username;
           }
         } catch (_e) {
           console.error('[LoginVM] registerUser me() failed', _e);
@@ -237,7 +238,6 @@ export class LoginUtil {
         } catch (_e) {
           console.error('[LoginVM] registerUser pull() failed', _e);
         }
-        RouterModule.pop()
         return true
       }
       throw new Error(res.msg || '注册失败，code=' + res.code)
@@ -271,6 +271,8 @@ export class LoginUtil {
         AuthCache.setUserType('full')
         iData.global.isLogin = true
         iData.global.userInfo.reset()
+        // Fallback nickname from register params if me() fails
+        iData.global.userInfo.nickname = params.username;
         ToastDialog.showToast({ message: '注册成功' })
         // Fetch user profile from cloud
         try {
@@ -278,7 +280,7 @@ export class LoginUtil {
           if (meRes.code === 0 && meRes.data) {
             const meData = meRes.data as MeResponseData;
             iData.global.userInfo.name = meData.email;
-            iData.global.userInfo.nickname = meData.username;
+            iData.global.userInfo.nickname = meData.username || params.username;
           }
         } catch (_e) {
           console.error('[LoginVM] handleRegister me() failed', _e);
@@ -289,7 +291,7 @@ export class LoginUtil {
         } catch (_e) {
           console.error('[LoginVM] handleRegister pull() failed', _e);
         }
-        RouterModule.pop()
+        RouterModule.pop();
       } else {
         ToastDialog.showToast({ message: res.msg || '注册失败' })
       }

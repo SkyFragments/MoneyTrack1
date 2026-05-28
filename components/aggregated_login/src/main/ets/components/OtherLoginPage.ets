@@ -312,6 +312,10 @@ export struct OtherLoginPage {
     .margin({ top: Constants.LOGIN_MARGIN_TOP })
     .enabled(!this.vm.isLoading)
     .onClick(() => {
+      if (!this.vm.isSelected) {
+        ToastDialog.showToast({ message: $r('app.string.select_the_agreement') });
+        return;
+      }
       if (this.registerUsername.length < 3) {
         ToastDialog.showToast({ message: '用户名至少3字符' })
         return
