@@ -1,11 +1,17 @@
 import { ObservedInfoItem, FormGroup, FormType } from 'collect_personal_info';
-import { iData, UserInfoModel } from 'commonlib';
+import { iData, UserInfoModel, AuthCache } from 'commonlib';
 import { UserApis, UserInfoType } from 'lib_network';
+import { ToastDialog } from '@hw-agconnect/ui-toast';
 
 @ObservedV2
 export class EditProfileVM {
   @Trace
   userInfo: UserInfoModel = iData.global.userInfo;
+
+  static isGuestMode(): boolean {
+    return AuthCache.getUserType() === 'guest';
+  }
+
   @Trace avatarItem: ObservedInfoItem = new ObservedInfoItem({
     type: FormType.CHOOSE_AVATAR,
     label: '头像',
@@ -111,6 +117,10 @@ export class EditProfileVM {
     },
     validMessageText: '内容为空，请输入后保存',
     onChange: async (param?: Object) => {
+      if (EditProfileVM.isGuestMode()) {
+        ToastDialog.showToast({ message: '请先升级账号后再设置姓名' });
+        return;
+      }
       const res = await UserApis.updateUserInfo({
         type: UserInfoType.NAME,
         value: param as string,
@@ -143,6 +153,10 @@ export class EditProfileVM {
       },
     },
     onChange: async (param?: Object) => {
+      if (EditProfileVM.isGuestMode()) {
+        ToastDialog.showToast({ message: '请先升级账号后再设置手机号' });
+        return;
+      }
       const res = await UserApis.updateUserInfo({
         type: UserInfoType.PHONE,
         value: param as string,
@@ -153,22 +167,22 @@ export class EditProfileVM {
       }
     },
   })
-  @Trace list: FormGroup[] = [
-    {
-      list: [this.avatarItem],
-    },
-    {
-      list: [
-        this.nickNameItem,
-        this.genderItem,
-        this.birthItem
-      ],
-    },
-    {
-      list: [
-        this.nameItem,
-        this.phoneItem
-      ],
-    },
-  ];
+  @Trace list: FormGroup[] = [];
+
+  constructor() {
+    const baseList: FormGroup[] = [
+      { list: [this.avatarItem] },
+      {
+        list: [
+          this.nickNameItem,
+          this.genderItem,
+          this.birthItem
+        ],
+      },
+    ];
+    if (!EditProfileVM.isGuestMode()) {
+      baseList.push({ list: [this.nameItem, this.phoneItem] });
+    }
+    this.list = baseList;
+  }
 }

@@ -27,5 +27,6 @@ export class UserInfoModel {
     this.birth = new Date();
     this.gender = GenderType.CONFIDENTIALITY;
     this.anonymousPhone = '';
+    this.isMember = false;
   }
 }

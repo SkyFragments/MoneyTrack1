@@ -58,15 +58,23 @@ export default class EntryAbility extends UIAbility {
   async validateAuth(): Promise<void> {
     const token = AuthCache.getAccessToken();
     if (!token) {
+      Logger.info(TAG, 'validateAuth: no token, skipping');
       return;
     }
+    Logger.info(TAG, 'validateAuth: token exists, calling me()...');
     try {
       const res = await AuthApis.me();
+      Logger.info(TAG, 'validateAuth: me() response code=%{public}d', res.code);
       if (res.code !== 0) {
+        Logger.info(TAG, 'validateAuth: me() returned error, clearing auth');
         this.clearAuthState();
+      } else {
+        Logger.info(TAG, 'validateAuth: token valid, keeping auth state');
       }
-    } catch {
-      this.clearAuthState();
+    } catch (err) {
+      Logger.info(TAG, 'validateAuth: me() threw exception % {public}s — NOT clearing auth on network error', String(err));
+      // Network error — do NOT clear auth state. Token might still be valid.
+      // Only clear on explicit server rejection (code !== 0).
     }
   }
 

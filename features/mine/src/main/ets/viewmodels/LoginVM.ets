@@ -211,8 +211,10 @@ export class LoginUtil {
   }
 
   static async registerUser(username: string, password: string): Promise<boolean> {
+    hilog.info(DOMAIN, TAG, '[LoginVM] registerUser START username=%{public}s', username);
     try {
       const res = await AuthApis.register({ username, password })
+      hilog.info(DOMAIN, TAG, '[LoginVM] registerUser response code=%{public}d', res.code);
       if (res.code === 0 && res.data) {
         AuthCache.clear();
         AuthCache.setTokens(res.data.accessToken, res.data.refreshToken)
@@ -221,6 +223,7 @@ export class LoginUtil {
         iData.global.isLogin = true
         iData.global.userInfo.reset()
         iData.global.userInfo.nickname = username;
+        hilog.info(DOMAIN, TAG, '[LoginVM] registerUser setAuth done isLogin=%{public}s', iData.global.isLogin);
         // Fetch user profile from cloud
         try {
           const meRes = await AuthApis.me();
@@ -228,6 +231,7 @@ export class LoginUtil {
             const meData = meRes.data as MeResponseData;
             iData.global.userInfo.name = meData.email;
             iData.global.userInfo.nickname = meData.username || username;
+            hilog.info(DOMAIN, TAG, '[LoginVM] registerUser me() success nickname=%{public}s', iData.global.userInfo.nickname);
           }
         } catch (_e) {
           console.error('[LoginVM] registerUser me() failed', _e);
@@ -235,9 +239,11 @@ export class LoginUtil {
         // Pull cloud data
         try {
           await LoginUtil.pullCloudData();
+          hilog.info(DOMAIN, TAG, '[LoginVM] registerUser pullCloudData done');
         } catch (_e) {
           console.error('[LoginVM] registerUser pull() failed', _e);
         }
+        hilog.info(DOMAIN, TAG, '[LoginVM] registerUser RETURNING TRUE isLogin=%{public}s', iData.global.isLogin);
         return true
       }
       throw new Error(res.msg || '注册失败，code=' + res.code)

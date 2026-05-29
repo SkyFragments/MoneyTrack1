@@ -1,0 +1,849 @@
+{
+  "info": {
+    "name": "MoneyTrack API",
+    "description": "MoneyTrack HarmonyOS App Backend API - Complete Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://1.12.234.7:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if API server is running"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+                  "}",
+                  "pm.test('Register success', function() {",
+                  "    pm.expect(jsonData.code).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"testuser001\",\"password\":\"123456\"}"
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+                  "}",
+                  "pm.test('Login success', function() {",
+                  "    pm.expect(jsonData.code).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"testuser001\",\"password\":\"123456\"}"
+            },
+            "description": "Login with username and password"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Verification Code",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/phone-login/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "phone-login", "send"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"phoneNumber\":\"13800138000\"}"
+            },
+            "description": "Send SMS verification code for phone login"
+          },
+          "response": []
+        },
+        {
+          "name": "Phone Login",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/phone-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "phone-login"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"phoneNumber\":\"13800138000\",\"code\":\"123456\"}"
+            },
+            "description": "Login with phone number and SMS code"
+          },
+          "response": []
+        },
+        {
+          "name": "Huawei Login",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/huawei-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "huawei-login"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"openId\":\"your_open_id\",\"email\":\"test@example.com\"}"
+            },
+            "description": "Login with Huawei account"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}"
+            },
+            "description": "Refresh access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get current user info (requires auth)"
+          },
+          "response": []
+        },
+        {
+          "name": "Upgrade Guest",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/upgrade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "upgrade"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"newnickname\",\"password\":\"123456\"}"
+            },
+            "description": "Upgrade guest account to full account (requires guest token)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Guest",
+      "item": [
+        {
+          "name": "Create Guest Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/guest/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guest", "create"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Create a guest account (no auth required)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "List Accounts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get all accounts for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Cash\",\"type\":\"cash\",\"date\":\"01\"}"
+            },
+            "description": "Create a new account"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Account",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Cash Updated\",\"type\":\"cash\",\"date\":\"15\"}"
+            },
+            "description": "Update an existing account"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Delete an account (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get all categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Food\",\"icon\":\"🍔\",\"type\":\"expense\"}"
+            },
+            "description": "Create a new category"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", ":id"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Food Updated\",\"icon\":\"🍕\"}"
+            },
+            "description": "Update an existing category"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", ":id"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Delete a category (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions?accountId=&since=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"],
+              "query": [
+                {
+                  "key": "accountId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "since",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get all transactions (optionally filtered by accountId or since timestamp)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"localId\":\"local-001\",\"accountId\":\"{{accountId}}\",\"resource\":\"Food\",\"type\":\"expense\",\"amount\":50.00,\"date\":\"2026-05-25\",\"note\":\"Lunch\",\"excluded\":false}"
+            },
+            "description": "Create a new transaction. type: income | expense"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\":60.00,\"note\":\"Lunch Updated\"}"
+            },
+            "description": "Update an existing transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Delete a transaction (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assets",
+      "item": [
+        {
+          "name": "List Assets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get all assets for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Asset",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Car\",\"type\":\"property\",\"value\":50000,\"date\":\"2026-01-01\"}"
+            },
+            "description": "Create a new asset. type: property | investment | other"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Asset",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", ":id"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\":55000}"
+            },
+            "description": "Update an existing asset"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Asset",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/assets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assets", ":id"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Delete an asset (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "List Budgets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Get all budgets for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Budget",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"category\":\"Food\",\"amount\":3000,\"month\":\"2026-05\"}"
+            },
+            "description": "Create a new budget for a category and month"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\":3500}"
+            },
+            "description": "Update an existing budget"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Delete a budget (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sync",
+      "item": [
+        {
+          "name": "Pull (Get All Data)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/pull",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "pull"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Pull all user data from server (accounts, transactions, assets, budgets)"
+          },
+          "response": []
+        },
+        {
+          "name": "Push (Sync Data to Server)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/push",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "push"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "description": "Push local data changes to server for sync"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
