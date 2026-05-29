@@ -313,7 +313,7 @@ export struct OtherLoginPage {
     .enabled(!this.vm.isLoading)
     .onClick(() => {
       if (!this.vm.isSelected) {
-        ToastDialog.showToast({ message: $r('app.string.select_the_agreement') });
+        ToastDialog.showToast({ message: '请阅读并勾选协议' });
         return;
       }
       if (this.registerUsername.length < 3) {
