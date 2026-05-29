@@ -97,8 +97,9 @@ export class AggregatedLoginVM {
     this.verifyCodeTime = 0;
     this.persistenceData.phoneNumber = '';
     clearInterval(this.timer);
-    iData.global.isLogin = false;
-    iData.global.userInfo.reset();
+    // NOTE: do NOT clear iData.global.isLogin or userInfo here —
+    // resetInstance is for form state only. Auth state is managed by
+    // login/logout flows and EntryAbility.validateAuth.
   }
 
   setValue(isSheet: boolean, autoSheet: boolean, isPersistence: boolean, apiController: ApiController,
