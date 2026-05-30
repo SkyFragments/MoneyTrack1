@@ -56,10 +56,11 @@ interface NonRenewItem {
 export class LoginUtil {
   static controller: LoginController = new LoginController()
 
-  static async huaweiLogin(loginParams: LoginParams): Promise<void> {
+  static async huaweiLogin(loginParams: LoginParams): Promise<boolean> {
     const openId = loginParams?.unionID ?? '';
     if (!openId) {
-      return;
+      hilog.error(DOMAIN, TAG, '[huaweiLogin] openId is empty, aborting');
+      return false;
     }
     try {
       const huaweiRes = await AuthApis.huaweiLogin({ openId });
@@ -98,14 +99,17 @@ export class LoginUtil {
           ToastDialog.showToast({ message: '同步云端数据失败' });
         }
         RouterModule.pop();
+        return true;
       } else {
         ToastDialog.showToast({ message: huaweiRes.msg || '登录失败' });
         // Close live Huawei session — user can't retry successfully without re-initiating
         LoginUtil.controller.signOut();
+        return false;
       }
     } catch (_error) {
       ToastDialog.showToast({ message: '网络错误，请稍后重试' });
       LoginUtil.controller.signOut();
+      return false;
     }
   }
 

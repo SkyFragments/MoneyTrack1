@@ -470,6 +470,8 @@ export class AggregatedLoginVM {
           } catch (_e) {
             hilog.error(this.domainId, this.logTag, `usernameLogin pull() failed: ${_e}`);
           }
+          RouterModule.clear();
+          RouterModule.pop();
           return true;
         }
         hilog.error(this.domainId, this.logTag, `usernameLogin failed: code=${res.code}, msg=${res.msg}`);

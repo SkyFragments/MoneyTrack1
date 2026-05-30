@@ -4,6 +4,7 @@ import { AggregatedLoginVM } from '../viewmodel/AggregatedLoginVM';
 import { AgreePrivacyBox } from './AgreePrivacyBox';
 import { LoginSheetUtils } from '../utils/LoginSheetUtils';
 import { ToastDialog } from '@hw-agconnect/ui-toast';
+import { RouterMap, RouterModule } from 'commonlib';
 
 interface RegisterParams {
   username: string;
