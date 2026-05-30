@@ -387,9 +387,8 @@ export class AggregatedLoginVM {
             authorizationCode: this.authorizationCode,
           };
           try {
-            await this.apiController.huaweiLogin(loginParams);
-            // Only close sheet on success
-            if (this.isSheet && this.autoSheet) {
+            const success = await this.apiController.huaweiLogin(loginParams);
+            if (success && this.isSheet && this.autoSheet) {
               LoginSheetUtils.close();
             }
           } catch (_e) {
