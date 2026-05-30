@@ -422,6 +422,10 @@ export struct OtherLoginPage {
     .fontColor($r('sys.color.font_on_primary'))
     .margin({ top: Constants.LOGIN_MARGIN_TOP })
     .onClick(() => {
+      if (!this.vm.isSelected) {
+        ToastDialog.showToast({ message: '请先阅读并同意用户协议和隐私政策' });
+        return;
+      }
       const pwd = this.registerPassword;
       const uname = this.registerUsername;
       console.info('[OtherLoginPage] register button clicked, username=' + uname + ', pwd len=' + pwd.length);
