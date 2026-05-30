@@ -451,6 +451,7 @@ export class AggregatedLoginVM {
           AuthCache.setUserId(res.data.user?.id ?? '');
           AuthCache.setUserType('full');
           iData.global.isLogin = true;
+          iData.global.userInfo.reset();
           // Fetch user profile from cloud
           try {
             const meRes = await AuthApis.me();
@@ -461,15 +462,11 @@ export class AggregatedLoginVM {
             }
           } catch (_e) {
             hilog.error(this.domainId, this.logTag, `usernameLogin me() failed: ${_e}`);
-            ToastDialog.showToast({ message: '获取用户信息失败' });
-            AuthCache.clear();
-            iData.global.isLogin = false;
-            iData.global.userInfo.reset();
-            return false;
           }
           // Pull cloud data
           try {
             await SyncApis.pull();
+            hilog.info(this.domainId, this.logTag, `usernameLogin pullCloudData done`);
           } catch (_e) {
             hilog.error(this.domainId, this.logTag, `usernameLogin pull() failed: ${_e}`);
           }
