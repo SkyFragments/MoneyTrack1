@@ -15,7 +15,7 @@ export class LoginEventDispatcher {
 
 
 export class ApiController {
-  constructor(huaweiLogin: (loginParams: LoginParams) => Promise<void>,
+  constructor(huaweiLogin: (loginParams: LoginParams) => Promise<boolean>,
     wxLogin: () => Promise<void>,
     verifyCodeLogin: (loginParams: LoginParams) => Promise<void>,) {
     this.huaweiLogin = huaweiLogin;
@@ -23,7 +23,7 @@ export class ApiController {
     this.verifyCode = verifyCodeLogin;
   }
 
-  huaweiLogin: (loginParams: LoginParams) => Promise<void> = () => new Promise(() => {
+  huaweiLogin: (loginParams: LoginParams) => Promise<boolean> = () => new Promise(() => {
   });
   wxLogin: () => Promise<void> = () => new Promise(() => {
   });
