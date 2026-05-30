@@ -39,9 +39,12 @@ class AuthCache {
         () => new AuthCacheModel(),
       );
       if (!connected) {
-        AuthCache._instance = new AuthCacheModel();
-        AuthCache._persisted = false;
-        console.error('[AuthCache] PersistenceV2.connect failed — using in-memory storage, tokens will be lost on restart');
+        // Keep using same in-memory instance if connect fails repeatedly
+        if (!AuthCache._instance) {
+          AuthCache._instance = new AuthCacheModel();
+          AuthCache._persisted = false;
+          console.error('[AuthCache] PersistenceV2.connect failed — using in-memory storage');
+        }
       } else {
         AuthCache._instance = connected;
         AuthCache._persisted = true;
