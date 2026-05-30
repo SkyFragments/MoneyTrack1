@@ -120,6 +120,9 @@ export class MineVM {
           }
         }
         // Restore transactions — syncAddTransaction bypasses AUTOINCREMENT, uses server transactionId directly
+        // Load existing transaction IDs once to avoid duplicate inserts
+        const existingTxs = await AccountingDB.getTransactionsForSync();
+        const existingTxIds = new Set(existingTxs.map(t => t.transactionId));
         const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
         for (const tx of txList) {
           if (tx.accountId == null || tx.accountId === 0) {
@@ -132,10 +135,8 @@ export class MineVM {
           if (txType !== BalanceChangeType.EXPENSE && txType !== BalanceChangeType.INCOME) {
             continue;
           }
-          // Check if transaction with this serverId already exists before inserting
-          const existingTxs = await AccountingDB.getTransactionsForSync();
-          const exists = existingTxs.some(t => t.transactionId === tx.transactionId);
-          if (exists) {
+          // Skip if server-assigned transactionId already exists locally
+          if (existingTxIds.has(tx.transactionId as number)) {
             continue;
           }
           await AccountingDB.syncAddTransaction({

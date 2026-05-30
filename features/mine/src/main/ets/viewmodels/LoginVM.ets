@@ -383,7 +383,7 @@ export class LoginUtil {
         }
 
         // Restore transactions (syncAddTransaction uses serverId as transactionId, bypasses AUTOINCREMENT)
-        // Check if transaction with serverId already exists before inserting to avoid duplicates
+        // Load existing transaction IDs once to avoid duplicate inserts
         const existingTxs = await AccountingDB.getTransactionsForSync();
         const existingTxIds = new Set(existingTxs.map(t => t.transactionId));
         const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
