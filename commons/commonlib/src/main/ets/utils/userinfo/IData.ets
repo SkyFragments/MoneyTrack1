@@ -10,12 +10,28 @@ export class GlobalStateMgr {
 }
 
 class IData {
-  public get global() {
-    return PersistenceV2.connect(
-      GlobalStateMgr,
-      'GlobalStateMgr',
-      () => new GlobalStateMgr(),
-    )!
+  private static _global: GlobalStateMgr | null = null;
+
+  public get global(): GlobalStateMgr {
+    if (!IData._global) {
+      const connected = PersistenceV2.connect(
+        GlobalStateMgr,
+        'GlobalStateMgr',
+        () => new GlobalStateMgr(),
+      );
+      // If connect returns a fresh blank model (app restart with empty store),
+      // keep existing _global if it has data. Otherwise use the fresh one.
+      if (connected) {
+        if (connected.isLogin || connected.userInfo.nickname !== '') {
+          IData._global = connected;
+        } else if (!IData._global) {
+          IData._global = connected;
+        }
+      } else if (!IData._global) {
+        IData._global = new GlobalStateMgr();
+      }
+    }
+    return IData._global!;
   }
 }
 

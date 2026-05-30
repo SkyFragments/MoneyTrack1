@@ -1,4 +1,8 @@
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { PersistenceV2 } from '@kit.ArkUI';
+
+const DOMAIN = 0x0000;
+const TAG = '[AuthCache]';
 
 @ObservedV2
 export class AuthCacheModel {
@@ -39,15 +43,25 @@ class AuthCache {
         () => new AuthCacheModel(),
       );
       if (!connected) {
-        // Keep using same in-memory instance if connect fails repeatedly
         if (!AuthCache._instance) {
           AuthCache._instance = new AuthCacheModel();
           AuthCache._persisted = false;
-          console.error('[AuthCache] PersistenceV2.connect failed — using in-memory storage');
+          hilog.error(DOMAIN, TAG, '[AuthCache] PersistenceV2.connect failed - using in-memory storage');
         }
       } else {
         AuthCache._instance = connected;
-        AuthCache._persisted = true;
+        // PersistenceV2 returns a fresh empty model on fresh connect after app restart.
+        // If the returned instance is blank (no userType/accessToken/userId),
+        // it means the persistent store was empty — user is guest.
+        // If it has data, the user was previously logged in.
+        if (AuthCache._instance.userType === '' && AuthCache._instance.accessToken === '' &&
+          AuthCache._instance.userId === '') {
+          AuthCache._persisted = false;
+          hilog.info(DOMAIN, TAG, '[AuthCache] PersistenceV2 connected but store is empty - guest mode');
+        } else {
+          AuthCache._persisted = true;
+          hilog.info(DOMAIN, TAG, '[AuthCache] PersistenceV2 restored: userType=%{public}s', AuthCache._instance.userType);
+        }
       }
     }
     return AuthCache._instance!;
