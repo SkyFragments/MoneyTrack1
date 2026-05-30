@@ -26,6 +26,8 @@ export struct OtherLoginPage {
   @Local registerUsername: string = '';
   @Local registerPassword: string = '';
   @Local registerConfirmPassword: string = '';
+  @Local loginUsername: string = '';
+  @Local loginPassword: string = '';
 
   aboutToAppear(): void {
     this.vm.registerOnWXRespCallback();
@@ -253,7 +255,7 @@ export struct OtherLoginPage {
 
   @Builder
   usernameLoginForm() {
-    TextInput({ placeholder: '用户名', text: $$this.registerUsername })
+    TextInput({ placeholder: '用户名', text: $$this.loginUsername })
       .width(Constants.FULL_PERCENT)
       .height(Constants.INPUT_HEIGHT)
       .caretColor(this.pageParam.themeColor)
@@ -272,7 +274,7 @@ export struct OtherLoginPage {
         right: Constants.PADDING_L
       })
 
-    TextInput({ placeholder: '密码', text: $$this.registerPassword })
+    TextInput({ placeholder: '密码', text: $$this.loginPassword })
       .width(Constants.FULL_PERCENT)
       .height(Constants.INPUT_HEIGHT)
       .caretColor(this.pageParam.themeColor)
@@ -317,16 +319,17 @@ export struct OtherLoginPage {
         ToastDialog.showToast({ message: '请阅读并勾选协议' });
         return;
       }
-      if (this.registerUsername.length < 3) {
+      if (this.loginUsername.length < 3) {
         ToastDialog.showToast({ message: '用户名至少3字符' })
         return
       }
-      if (this.registerPassword.length < 6) {
+      if (this.loginPassword.length < 6) {
         ToastDialog.showToast({ message: '密码至少6字符' })
         return
       }
-      this.vm.usernameLogin(this.registerUsername, this.registerPassword).then((success) => {
+      this.vm.usernameLogin(this.loginUsername, this.loginPassword).then((success) => {
         if (success) {
+          RouterModule.clear();
           this.routerModule.pop()
         } else {
           ToastDialog.showToast({ message: '登录失败，请检查用户名和密码' })
@@ -343,8 +346,10 @@ export struct OtherLoginPage {
       .fontColor($r('sys.color.warning'))
       .margin({ top: Constants.PADDING_M })
       .onClick(() => {
-        this.usernameLoginMode = false
-        this.registerMode = true
+        this.loginUsername = '';
+        this.loginPassword = '';
+        this.usernameLoginMode = false;
+        this.registerMode = true;
       })
   }
 
@@ -446,6 +451,7 @@ export struct OtherLoginPage {
       p.then((success) => {
         console.info('[OtherLoginPage] registerUser.then success=' + success);
         if (success) {
+          RouterModule.clear();
           this.routerModule.pop();
         } else {
           console.info('[OtherLoginPage] register failed (false), showing toast');
@@ -463,11 +469,12 @@ export struct OtherLoginPage {
       .fontColor($r('sys.color.warning'))
       .margin({ top: Constants.PADDING_M })
       .onClick(() => {
-        this.registerMode = false
-        this.usernameLoginMode = false
-        this.registerUsername = ''
-        this.registerPassword = ''
-        this.registerConfirmPassword = ''
+        this.registerMode = false;
+        this.registerUsername = '';
+        this.registerPassword = '';
+        this.registerConfirmPassword = '';
+        this.loginUsername = '';
+        this.loginPassword = '';
       })
   }
 
