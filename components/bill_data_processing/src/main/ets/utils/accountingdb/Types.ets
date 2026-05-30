@@ -73,6 +73,7 @@ export interface BudgetTableBasis {
   accountId: number;
   month: string;
   amount: number;
+  deleted?: number;
 }
 
 export interface AssetReport extends AssetSummary {

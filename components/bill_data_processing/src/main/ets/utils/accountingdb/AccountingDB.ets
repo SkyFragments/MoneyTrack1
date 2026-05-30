@@ -850,15 +850,109 @@ class AccountingDB extends BaseDB {
   public async getBudgetsForSync(): Promise<BudgetTableBasis[]> {
     try {
       const sql = `
-        SELECT id, accountId, month, amount
+        SELECT id, accountId, month, amount, deleted
         FROM ${AccountingDBConstants.BUDGET_TABLE_NAME}
-        WHERE deleted = 0
         ORDER BY id ASC
       `;
       return await this.querySql<BudgetTableBasis>(sql);
     } catch (err) {
       Logger.error(TAG, 'getBudgetsForSync failed. error:' + JSON.stringify(err));
       return [];
+    }
+  }
+
+  /**
+   * 获取所有账本（用于云端同步推送）
+   */
+  public async getAccountsForSync(): Promise<AccountTableBasis[]> {
+    try {
+      const sql = `
+        SELECT accountId, name, type, date, accountIncome, accountExpense
+        FROM ${AccountingDBConstants.ACCOUNT_TABLE_NAME}
+        WHERE deleted = 0
+        ORDER BY accountId ASC
+      `;
+      return await this.querySql<AccountTableBasis>(sql);
+    } catch (err) {
+      Logger.error(TAG, 'getAccountsForSync failed. error:' + JSON.stringify(err));
+      return [];
+    }
+  }
+
+  /**
+   * 获取所有资产（用于云端同步推送）
+   */
+  public async getAssetsForSync(): Promise<AssetTableBasis[]> {
+    try {
+      const sql = `
+        SELECT assetId, name, type, subType, category, amount, note, isCustom
+        FROM ${AccountingDBConstants.ASSET_TABLE_NAME}
+        WHERE deleted = 0
+        ORDER BY assetId ASC
+      `;
+      return await this.querySql<AssetTableBasis>(sql);
+    } catch (err) {
+      Logger.error(TAG, 'getAssetsForSync failed. error:' + JSON.stringify(err));
+      return [];
+    }
+  }
+
+  /**
+   * 获取指定账本和时间范围内的所有交易（用于云端同步推送）
+   */
+  public async getTransactionsForSync(accountId?: number): Promise<TransactionTableBasis[]> {
+    try {
+      const condition = accountId != null ? `WHERE accountId = ${accountId} AND deleted = 0` : 'WHERE deleted = 0';
+      const sql = `
+        SELECT transactionId, accountId, type, resource, amount, date, note, excluded, assetId, localId
+        FROM ${AccountingDBConstants.TRANSACTION_TABLE_NAME}
+        ${condition}
+        ORDER BY transactionId ASC
+      `;
+      return await this.querySql<TransactionTableBasis>(sql);
+    } catch (err) {
+      Logger.error(TAG, 'getTransactionsForSync failed. error:' + JSON.stringify(err));
+      return [];
+    }
+  }
+
+  /**
+   * 更新账本的本地ID为服务端分配的服务器ID（云同步后调用）
+   * @param localId 客户端原始ID（本地 AUTOINCREMENT 生成）
+   * @param serverId 服务端分配的新ID
+   */
+  public async updateAccountServerId(localId: number, serverId: number): Promise<boolean> {
+    try {
+      const sql = `
+        UPDATE ${AccountingDBConstants.ACCOUNT_TABLE_NAME}
+        SET accountId = ?
+        WHERE accountId = ?
+      `;
+      await this.executeSql(sql, [serverId, localId]);
+      return true;
+    } catch (err) {
+      Logger.error(TAG, 'updateAccountServerId failed. error:' + JSON.stringify(err));
+      return false;
+    }
+  }
+
+  /**
+   * 更新资产的本地ID为服务端分配的服务器ID（云同步后调用）
+   * @param localId 客户端原始ID（本地 AUTOINCREMENT 生成）
+   * @param serverId 服务端分配的新ID
+   */
+  public async updateAssetServerId(localId: number, serverId: number): Promise<boolean> {
+    try {
+      const sql = `
+        UPDATE ${AccountingDBConstants.ASSET_TABLE_NAME}
+        SET assetId = ?
+        WHERE assetId = ?
+      `;
+      await this.executeSql(sql, [serverId, localId]);
+      return true;
+    } catch (err) {
+      Logger.error(TAG, 'updateAssetServerId failed. error:' + JSON.stringify(err));
+      return false;
     }
   }
 }

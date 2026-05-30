@@ -74,27 +74,34 @@ export class MineVM {
       // Push local data to cloud first
       let pushSuccess = true;
       try {
-        const localAccounts = await AccountingDB.getAccounts();
-        const localTxResult = await AccountingDB.getTransactionsForDefaultAccount();
-        const localAssetsResult = await AccountingDB.getAssetAccount([]);
+        const localAccounts = await AccountingDB.getAccountsForSync();
+        const localTxResult = await AccountingDB.getTransactionsForSync();
+        const localAssets = await AccountingDB.getAssetsForSync();
         const localBudgets = await AccountingDB.getBudgetsForSync();
         const pushRes = await SyncApis.push({
           accounts: localAccounts,
-          transactions: localTxResult.transactions,
-          assets: localAssetsResult.assets,
+          transactions: localTxResult,
+          assets: localAssets,
           budgets: localBudgets,
         });
         pushSuccess = pushRes.code === 0 && (pushRes.data?.counts?.accounts ?? -1) >= 0;
-        // Apply localId → serverId mappings from push
+        // Apply localId → serverId mappings from push (all table types)
         if (pushRes.data?.mappings?.length) {
           for (const mapping of pushRes.data.mappings) {
-            if (mapping.table === 'transactions' && mapping.localId != null) {
+            if (mapping.localId == null) {
+              continue;
+            }
+            if (mapping.table === 'transactions') {
               await AccountingDB.updateTransactionServerId(Number(mapping.localId), mapping.serverId);
+            } else if (mapping.table === 'accounts') {
+              await AccountingDB.updateAccountServerId(Number(mapping.localId), mapping.serverId);
+            } else if (mapping.table === 'assets') {
+              await AccountingDB.updateAssetServerId(Number(mapping.localId), mapping.serverId);
             }
           }
         }
       } catch (_e) {
-        console.error('[MineVM] doSync push failed', _e);
+        hilog.error(0x0000, 'MineVM', `[doSync] push failed: ${JSON.stringify(_e)}`);
         pushSuccess = false;
       }
       // Pull cloud data with incremental sync
@@ -102,6 +109,7 @@ export class MineVM {
       const res = await SyncApis.pull(since > 0 ? { since: since.toString() } as SyncPullParams : undefined);
       if (res.code === 0 && res.data) {
         const data: SyncPullData = res.data as SyncPullData;
+        // Restore accounts — check by serverId before inserting
         const accountList: AccountTableBasis[] = (data.accounts || []) as AccountTableBasis[];
         for (const account of accountList) {
           if (account.accountId != null && account.accountId !== 0) {
@@ -111,6 +119,7 @@ export class MineVM {
             }
           }
         }
+        // Restore transactions — syncAddTransaction bypasses AUTOINCREMENT, uses server transactionId directly
         const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
         for (const tx of txList) {
           if (tx.accountId == null || tx.accountId === 0) {
@@ -121,6 +130,12 @@ export class MineVM {
           }
           const txType = String(tx.type);
           if (txType !== BalanceChangeType.EXPENSE && txType !== BalanceChangeType.INCOME) {
+            continue;
+          }
+          // Check if transaction with this serverId already exists before inserting
+          const existingTxs = await AccountingDB.getTransactionsForSync();
+          const exists = existingTxs.some(t => t.transactionId === tx.transactionId);
+          if (exists) {
             continue;
           }
           await AccountingDB.syncAddTransaction({
@@ -135,12 +150,10 @@ export class MineVM {
             assetId: (tx.assetId as number) ?? 0,
           }, tx.transactionId as number);
         }
-        const assetResult = await AccountingDB.getAssetAccount([]);
-        const assetReport: AssetReport = assetResult as AssetReport;
-        const assetList = assetReport.assets;
-        const existingAssets: AssetTableBasis[] = data.assets?.length ? assetList : [];
-        const existingAssetIds = new Set(existingAssets.map((a: AssetTableBasis) => a.assetId));
+        // Restore assets — check by serverId before inserting
         const cloudAssets: AssetTableBasis[] = (data.assets || []) as AssetTableBasis[];
+        const localAssets = await AccountingDB.getAssetsForSync();
+        const existingAssetIds = new Set(localAssets.map(a => a.assetId));
         for (const asset of cloudAssets) {
           if (asset.assetId != null && !existingAssetIds.has(asset.assetId)) {
             await AccountingDB.addAssetAccount(asset);
@@ -160,6 +173,7 @@ export class MineVM {
         ToastDialog.showToast({ message: res.msg || '同步失败' });
       }
     } catch (err) {
+      hilog.error(0x0000, 'MineVM', `[doSync] failed: ${JSON.stringify(err)}`);
       ToastDialog.showToast({ message: '同步失败' });
     }
   }

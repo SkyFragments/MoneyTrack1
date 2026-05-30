@@ -383,12 +383,17 @@ export class LoginUtil {
         }
 
         // Restore transactions (syncAddTransaction uses serverId as transactionId, bypasses AUTOINCREMENT)
+        // Check if transaction with serverId already exists before inserting to avoid duplicates
+        const existingTxs = await AccountingDB.getTransactionsForSync();
+        const existingTxIds = new Set(existingTxs.map(t => t.transactionId));
         const txList: TransactionTableBasis[] = (data.transactions || []) as TransactionTableBasis[];
         for (const tx of txList) {
           if (tx.accountId == null || tx.accountId === 0) continue;
           if (!tx.type) continue;
           const txType = String(tx.type);
           if (txType !== BalanceChangeType.EXPENSE && txType !== BalanceChangeType.INCOME) continue;
+          // Skip if server-assigned transactionId already exists locally
+          if (existingTxIds.has(tx.transactionId as number)) continue;
           await AccountingDB.syncAddTransaction({
             transactionId: tx.transactionId as number,
             accountId: tx.accountId as number,
@@ -402,12 +407,10 @@ export class LoginUtil {
           }, tx.transactionId as number);
         }
 
-        // Restore assets (only if not already existing locally)
-        const assetResult = await AccountingDB.getAssetAccount([]);
-        const assetReport: AssetReport = assetResult as AssetReport;
-        const existingAssets: AssetTableBasis[] = assetReport.assets;
-        const existingAssetIds = new Set(existingAssets.map((a: AssetTableBasis) => a.assetId));
+        // Restore assets (only if not already existing locally by server-assigned assetId)
         const cloudAssets: AssetTableBasis[] = (data.assets || []) as AssetTableBasis[];
+        const localAssets = await AccountingDB.getAssetsForSync();
+        const existingAssetIds = new Set(localAssets.map((a: AssetTableBasis) => a.assetId));
         for (const asset of cloudAssets) {
           if (asset.assetId != null && !existingAssetIds.has(asset.assetId)) {
             await AccountingDB.addAssetAccount(asset);
